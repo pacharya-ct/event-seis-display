@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="./css/style.css">
+  <title>SCSN Network Summary</title>
+  <style>
+    input#level {
+      width: 3em;
+    }
+    sp-organized-display {
+      --sp-seismograph-height: 120px;
+    }
+    sp-organized-display-item {
+      --sp-seismograph-height: 120px;
+    }
+    sp-station-quake-map {
+      height: 600px;
+    }
+    sp-seismograph {
+      height: 100px;
+      min-height:100px;
+    }
+
+    div#realtime {
+      float:right;
+      width:60%;
+    }
+    div#div-map {
+      float:left;
+      width: 40%;
+    }
+    svg.seismograph text.title {
+      font-size:normal;
+      font-weight: normal;
+      color:black;
+    }
+
+   </style>
+</head>
+<body>
+  <button id="disconnect">Disconnect</button>
+  <button id="pause">Pause</button>
+  <div id="debug"></div>
+
+  <h5 >Now: <span id="nt"></span></h5>
+    Packets: <span id="numPackets">0</span>
+  <div id="realtime"></div>
+  <div id="div-map">
+  <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false"
+    tileUrl="https://services.arcgisonline.com/arcgis/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
+    tileAttribution="Tiles © Esri — Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri" >
+  </sp-station-quake-map>
+</div>
+  <h5>Generated with <a href="https://github.com/crotwell/seisplotjs">Seisplotjs version <span id="version">3</span></a>.</h5>
+  <script type="module" src="js/waveform.js"></script>
+  <body>
+</html>
