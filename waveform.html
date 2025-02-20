@@ -5,54 +5,71 @@
   <link rel="stylesheet" href="./css/style.css">
   <title>SCSN Network Summary</title>
   <style>
-    input#level {
-      width: 3em;
-    }
     sp-organized-display {
-      --sp-seismograph-height: 120px;
-    }
-    sp-organized-display-item {
-      --sp-seismograph-height: 120px;
+      --sp-seismograph-height: 80px;
+    }    
+    sp-seismograph {
+      height: 80px;
     }
     sp-station-quake-map {
-      height: 600px;
+      height: 800px;
     }
-    sp-seismograph {
-      height: 100px;
-      min-height:100px;
+    div.quaketbl {
+      height: 150px;
+      overflow:hidden;
+      overflow-y: scroll;
+      margin-top: 3px;
     }
-
-    div#realtime {
-      float:right;
-      width:60%;
-    }
-    div#div-map {
-      float:left;
-      width: 40%;
+    /* Non working styles. 
+    trying to color the table header row, 
+    change the seismograph text style, 
+    background color for every other seimograph */
+    div.quaketbl sp-quake-table table thead tr {
+      top: 0;
+      z-index: 2;
+      position: sticky;
+      background-color: pink;
     }
     svg.seismograph text.title {
       font-size:normal;
       font-weight: normal;
       color:black;
     }
-
+    svg.seismograph:nth-of-type(odd){
+      background-color:red;
+    }
    </style>
 </head>
-<body>
-  <button id="disconnect">Disconnect</button>
-  <button id="pause">Pause</button>
-  <div id="debug"></div>
+<body class="left-sidebar-grid">
+    <header class="header"><img src="images/SCSN logo 2021_header_2.png" width="120" height="130" alt="SCSN"><h1>SCSN Network Summary</h1>
+      <time id="nt"></time>
+    </header>
+    <main class="main-content" >  
+      <button id="disconnect">Disconnect</button>
+      <button id="pause">Pause</button>
+      Packets: <span id="numPackets">0</span>
+      <div id="realtime"></div>
+    </main>
+    <section class="left-sidebar">
+      <error-text></error-text>
+      <h3>Station and Recent Earthquake Map</h3>
+      <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5" 
+        tileUrl="https://services.arcgisonline.com/arcgis/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
+        tileAttribution="Tiles © Esri — Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri" >
+      </sp-station-quake-map>
+      <map-legend></map-legend>
+      <div class="quaketbl">
+      <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
+      <sp-quake-table id="quake6h_ca" class="fixedheight" height="150px"></sp-quake-table> 
+      </div>     
+      <h3 class="tblheader">California Regional Earthquakes with Magnitude >= 3 in the last 7 days</h3>
+      <sp-quake-table id="quake7d_ca_mag3" class="fixedheight"></sp-quake-table></div>
+      <h3 class="tblheader">Worldwide Earthquakes with Magnitude >= 5.5 in the last 7 days</h3>
+      <sp-quake-table id="quake7d_mag5_5" class="fixedheight"></sp-quake-table>
 
-  <h5 >Now: <span id="nt"></span></h5>
-    Packets: <span id="numPackets">0</span>
-  <div id="realtime"></div>
-  <div id="div-map">
-  <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false"
-    tileUrl="https://services.arcgisonline.com/arcgis/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
-    tileAttribution="Tiles © Esri — Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri" >
-  </sp-station-quake-map>
-</div>
-  <h5>Generated with <a href="https://github.com/crotwell/seisplotjs">Seisplotjs version <span id="version">3</span></a>.</h5>
+    </section>
+    <footer class="footer">Footer</footer>
   <script type="module" src="js/waveform.js"></script>
-  <body>
+  <script type="module" src="js/event_map_table.js"></script>
+  </body>
 </html>

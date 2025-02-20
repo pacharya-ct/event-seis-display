@@ -1,0 +1,269 @@
+import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
+
+const JSON_MIME = "application/json";
+const timeoutSec = 10;
+const resSettings = await fetch("../conf/settings.json")
+const settings = await resSettings.json()
+
+const mymap = document.querySelector("sp-station-quake-map");
+let QUAKE_COL = sp.infotable.QUAKE_COLUMN;
+
+//mymap.magScale(2);
+mymap.addStyle(`
+  div.stationMapMarker {
+    color: #3c1308;
+    width: 5px;
+    height: 5px;
+    opacity: 0.8;
+  }
+
+.leaflet-marker-icon {
+  width:7px;
+  height:7px;
+}
+  path.quakeMapMarker {
+    fill-opacity: 0.6;
+    stroke-width:1px;
+    stroke: black;
+  }
+
+  path.quake-lasthour{
+    fill: #ff0000;
+    //stroke: yellow;
+    z-index: 10;
+  }  
+  path.quake-lastday{
+    fill: #0000ff;
+    //stroke: yellow;
+    z-index: 5;
+  }  
+  path.quake-lastweek{
+    fill: #ffff00;
+    //stroke: yellow;
+    z-index:2;
+  }  
+  path.scsn-polygon {
+      stroke: #ff6d1e;
+      stroke-width: 2px;
+      fill-opacity:0;
+    }  
+  path.scsn-das {
+      stroke: #ff0000;
+      stroke-width: 2px;
+      fill-opacity:0;
+    }  
+  path.scsn-ca-faults {
+      stroke: #9e9e9e;
+      stroke-width: 1px;
+      fill-opacity:0;
+    }  
+`);
+
+
+function updateNumPackets() {
+  numPackets++;
+  document.querySelector("#numPackets").textContent = numPackets;
+}
+function addToDebug(message) {
+  const debugDiv = document.querySelector("div#debug");
+  if (!debugDiv) {
+    return;
+  }
+  const pre = debugDiv.appendChild(document.createElement("pre"));
+  const code = pre.appendChild(document.createElement("code"));
+  code.textContent = message;
+}
+function clearDebug() {
+  const debugDiv = document.querySelector("div#debug");
+  if (!debugDiv) {
+    return;
+  }
+  while (debugDiv.firstChild) {
+    debugDiv.removeChild(debugDiv.firstChild);
+  }
+}
+function errorFn(error) {
+  console.assert(false, error);
+  if (seedlink) {
+    seedlink.close();
+  }
+  addToDebug("Error: " + error);
+}
+function isValidJson (jsonData) {
+  return true;
+  // TODO Needs to be filled 
+}
+  
+function parseEventJson(jsonData) {
+  let quakeList = [];
+  for (let entry of jsonData) {
+    let evtId = entry.source + entry.sourceCode;
+    const quake = new sp.quakeml.Quake();
+    quake.publicId = `quakeml:earthquake.usgs.gov/fdsnws/event/1/query?eventid=${evtId}`;
+    quake.eventId=evtId;
+    let eventTime = sp.util.isoToDateTime(entry.eventTime);
+    const origin = new sp.quakeml.Origin(eventTime, entry.latitude, entry.longitude);
+
+    origin.depth = entry.depth*1000;
+    quake.originList.push(origin);
+    const mag = new sp.quakeml.Magnitude(entry.magnitude);
+    mag.type = entry["magnitude-type"]; // dot (object) notation fails because of the hyphen in key name. hence using dict lookup
+    quake.magnitudeList.push(mag);
+    quake.preferredOrigin = origin;
+    quake.preferredMagnitude = mag;
+    quakeList.push(quake);
+  }
+  return quakeList;
+}
+
+// returns Promise<QuakeList>
+function loadEventJson(url) {
+  return new Promise((resolve, reject) => {
+    const fetchInit = sp.util.defaultFetchInitObj(JSON_MIME);
+    sp.util.doFetchWithTimeout(url, fetchInit, timeoutSec * 1000)
+      .then((response) => {
+        if (response.status !== 200) {
+          // no data
+          return [];
+        } else {
+          return response.json();
+        }
+      })
+      .then((jsonData) => {
+        if (isValidJson(jsonData)) {
+          let quakes = parseEventJson(jsonData);
+          resolve(quakes);
+        } else {
+          //throw new TypeError(`Invalid data!`);
+          reject('Invalid data');
+        }
+      })
+  })
+}
+let quakes2map = function(url, errorSel){
+  loadEventJson(url)
+    .then((quakes) => {
+      // all quakes could be added in one go like this 
+      // mymap.addQuake(quakes); but that has not been done
+      // because quakemarkers need to be colored differently based 
+      // on how recent they are. 
+      let now = sp.luxon.DateTime.utc();
+      let lasthour = now.minus({hours: 1});
+      let lastday = now.minus({days:1});
+      let lastweek = now.minus({days:7});
+      let quakes_lasthour = [];
+      let quakes_lastday = [];
+      let quakes_lastweek = [];
+      for (let quake of quakes) {
+        if (quake.time >= lasthour) {
+          quakes_lasthour.push(quake);
+        }
+        else if (quake.time >= lastday ) {
+          quakes_lastday.push(quake);
+        }
+        else if (quake.time >= lastweek ) {
+          quakes_lastweek.push(quake);
+        }
+        else {
+          //console.log("Event older than 7 days not displayed on map");
+        }
+      }
+      mymap.quakeList=[]; //clear previously loaded quakes (if any)
+      mymap.addQuake(quakes_lastweek, "quake-lastweek");  
+      mymap.addQuake(quakes_lastday, "quake-lastday");  
+      mymap.addQuake(quakes_lasthour, "quake-lasthour");  
+      mymap.drawQuakeLayer();
+    })
+    .catch(function (error) {
+      const errTag = document.querySelector(errorSel);
+      errTag.innerHTML = `
+      <p>Error loading data. ${error}</p>
+    `;
+      console.assert(false, error);
+    });
+}
+
+let columnLabels = new Map();
+columnLabels.set(QUAKE_COL.EVENTID, "EventID");
+columnLabels.set(QUAKE_COL.TIME, "Time");
+columnLabels.set(QUAKE_COL.LAT, "Lat");
+columnLabels.set(QUAKE_COL.LON, "Lon");
+columnLabels.set(QUAKE_COL.MAGANDTYPE, "Mag");
+columnLabels.set(QUAKE_COL.DEPTHNOUNIT, "Depth (km)");
+
+let quakes2table = function (url, quaketblid) {
+  let elem = document.querySelector("sp-quake-table#" + quaketblid);
+  elem.addStyle('sp-quake-table  {height:150px;}')
+  loadEventJson(url)
+    .then((quakes) => {
+      elem.quakeList = quakes;
+      elem.columnLabels = columnLabels;
+    })
+}
+let buildEventMapAndTable = function () {
+  quakes2map("http://localhost:8000/feeds/regional_7days.json", "section.left-sidebar error-text")
+
+  quakes2table("http://localhost:8000/feeds/regional_6hours.json", "quake6h_ca")
+  quakes2table("http://localhost:8000/feeds/regional_7days_mag3.json", "quake7d_ca_mag3")
+  quakes2table("http://localhost:8000/feeds/global_7days_mag5_5.json", "quake7d_mag5_5")
+}
+
+let drawLegend = function () {
+  let legendElem = document.querySelector('map-legend');
+
+  let ageLegend = {"Last Hour": "#ff0000", "Last Day": "#0000ff", "Last Week": "#ffff00"};
+  let magLegend = [1, 3, 5, 7];
+  
+  for (let [key, colorval] of Object.entries(ageLegend)) {
+    let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgElem.setAttribute("width", "25");
+    svgElem.setAttribute("height", "16");
+    let circleElem = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circleElem.setAttribute("cx", 10);
+    circleElem.setAttribute("cy", 10);
+    circleElem.setAttribute("r", 6);
+    circleElem.setAttribute("fill", colorval);
+    svgElem.appendChild(circleElem);
+    legendElem.appendChild(svgElem);
+    legendElem.appendChild(document.createTextNode(key));
+  }
+  legendElem.appendChild(document.createElement('br'));
+  for (let mag of magLegend) {
+    let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    let radius = sp.leafletutil.getRadiusForMag(mag, mymap.magScale);
+    svgElem.setAttribute("width", 10+radius*2);
+    svgElem.setAttribute("height", "40");
+    let circleElem = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circleElem.setAttribute("cx", 8+radius);
+    circleElem.setAttribute("cy", 20);
+    circleElem.setAttribute("r", radius);
+    circleElem.setAttribute("fill", "#ff6e1e");
+    svgElem.appendChild(circleElem);
+    legendElem.appendChild(svgElem);
+    legendElem.appendChild(document.createTextNode("M " + mag));
+  }
+}
+
+drawLegend();
+
+async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
+  try {
+    let layer = await fetch(geojsonurl);
+    let layerjson = await layer.json();
+    mymap.addGeoJsonLayer(layername, layerjson, layerclass);
+  }
+  catch (e) {
+    console.log("Unable to add layer " + layername);
+    console.log(e)
+  }
+}
+
+await addGeoJsonLayer2map("SCSN Polygon", "../map_layers/SCboundary.json", "scsn-polygon");
+await addGeoJsonLayer2map("CA Faults", "../map_layers/ca_faults.json", "scsn-ca-faults");
+await addGeoJsonLayer2map("RidgeCrest DAS Array", "../map_layers/Ridgecrest_waterfall_array_1.geojson", "scsn-das");
+mymap.drawGeoJsonLayers();
+mymap.drawLayers();
+
+buildEventMapAndTable();
+// Refresh the map and table every minute
+let eventTimer = setInterval(buildEventMapAndTable, 60000);

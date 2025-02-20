@@ -2,3 +2,101 @@
   float: right;
   font-size: small;
 }
+
+body {
+    margin: 2px;
+    padding: 0;
+    height: 100%;
+    font-size: 12px;
+    font-family:"Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+    color: #333333;
+    /*background: #efefef;*/
+}
+div {
+  background: #ffffff;
+  padding:2px;
+  border:1px solid #eeeeee;
+}
+
+/* start */
+/* grid container */
+.left-sidebar-grid {
+    display:grid;
+    grid-template-areas:
+        'header'
+        'main-content'
+        'left-sidebar'
+        'footer';
+}
+
+/* general column padding */
+.left-sidebar-grid > * {
+    padding:1rem;
+}
+
+/* assign columns to grid areas */
+.left-sidebar-grid > .header {
+    grid-area:header;
+    padding: 0;
+    /* background:#f97171; */
+}
+.left-sidebar-grid > .main-content {
+    grid-area:main-content;
+    background:#fff;
+}
+.left-sidebar-grid > .left-sidebar {
+    grid-area:left-sidebar;
+   /* background:#f5d55f;*/
+}
+.left-sidebar-grid > .footer {
+    grid-area:footer;
+   /* background:#72c2f1;*/
+}
+
+/* tablet breakpoint */
+@media (min-width:768px) {
+    .left-sidebar-grid {
+        grid-template-columns:repeat(3, 1fr);
+        grid-template-areas:
+            'header header header'
+            'left-sidebar main-content main-content'
+            'footer footer footer';
+    }
+}
+/* end grid container*/
+
+/* attempt to style the station marker. doesnt seem to work tho */
+.leaflet-marker-icon {
+  width:5px;
+  height:5px;
+}
+map-legend {
+  margin: 0;
+  padding: 0;
+}
+div.quaketbl {
+  height: 150px;
+  overflow:hidden;
+  overflow-y: scroll;
+  margin-top: 3px;
+}
+sp-quake-table.fixedheight {
+  height: 150px;
+  overflow-y: auto;
+  margin-top: 3px;
+}
+header img { float: left; }
+header h1 {
+  font-size:3em;
+  margin: 1em;
+  text-align:center;
+}
+time {
+  float:right;
+  display:inline;
+}
+section.left-sidebar h3 {
+  font-size: 1.2em;
+  margin: 0.5em;
+  text-align: center;
+}
