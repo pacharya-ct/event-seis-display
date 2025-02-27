@@ -99,6 +99,10 @@ let pickMarkerBySta = new Map();
 let eventIdList = [];
 
 let getEvent = function () {
+  if (!settings.EVENT_WS) {
+    console.log('Event Webservice is not defined. Skip fetching picks')
+    return;
+  }
   let eventQuery = new sp.fdsnevent.EventQuery(settings.EVENT_WS);
 
   //get events using the time period of the seisograph display
@@ -151,7 +155,7 @@ let getEvent = function () {
   })
 }
 
-let eventTimer = setInterval(getEvent, 60000);
+let eventTimer = setInterval(getEvent, 120000);
 
 let allStations = Array.from(sp.stationxml.allStations(networkList));
 mymap.addStation(allStations);
