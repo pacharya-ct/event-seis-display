@@ -201,11 +201,11 @@ let quakes2table = function (url, quaketblid) {
     })
 }
 let buildEventMapAndTable = function () {
-  quakes2map("http://localhost:8000/feeds/regional_7days.json", "section.left-sidebar error-text")
+  quakes2map("feeds/regional_7days.json", "section.left-sidebar error-text")
 
-  quakes2table("http://localhost:8000/feeds/regional_6hours.json", "quake6h_ca")
-  quakes2table("http://localhost:8000/feeds/regional_7days_mag3.json", "quake7d_ca_mag3")
-  quakes2table("http://localhost:8000/feeds/global_7days_mag5_5.json", "quake7d_mag5_5")
+  quakes2table("feeds/regional_6hours.json", "quake6h_ca")
+  quakes2table("feeds/regional_7days_mag3.json", "quake7d_ca_mag3")
+  quakes2table("feeds/global_7days_mag5_5.json", "quake7d_mag5_5")
 }
 
 let drawLegend = function () {
@@ -248,13 +248,20 @@ drawLegend();
 
 async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
   try {
-    let layer = await fetch(geojsonurl);
+    let response = await fetch(geojsonurl);
+    if (!response.ok) {
+      if (response.status === 404){
+        console.log("Resource not found:", geojsonurl)
+        return null;
+      }
+      console.log("Other error ", response.status);
+      return null;
+    }
     let layerjson = await layer.json();
     mymap.addGeoJsonLayer(layername, layerjson, layerclass);
   }
   catch (e) {
-    console.log("Unable to add layer " + layername);
-    console.log(e)
+    console.log("Error fetching " + layername);
   }
 }
 
