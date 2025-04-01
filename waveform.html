@@ -6,70 +6,72 @@
   <title>SCSN Network Summary</title>
   <style>
     sp-organized-display {
-      --sp-seismograph-height: 80px;
+      --sp-seismograph-height: 100px;
+      background: #ecf8f9;
     }    
-    sp-seismograph {
-      height: 80px;
+    sp-quake-table {
+      --even-row-background: #ecf8f9;
     }
     sp-station-quake-map {
       height: 800px;
     }
-    div.quaketbl {
-      height: 150px;
-      overflow:hidden;
-      overflow-y: scroll;
-      margin-top: 3px;
-    }
+
     /* Non working styles. 
-    trying to color the table header row, 
     change the seismograph text style, 
-    background color for every other seimograph */
-    div.quaketbl sp-quake-table table thead tr {
-      top: 0;
-      z-index: 2;
-      position: sticky;
-      background-color: pink;
-    }
+    */
     svg.seismograph text.title {
       font-size:normal;
       font-weight: normal;
       color:black;
     }
-    svg.seismograph:nth-of-type(odd){
-      background-color:red;
-    }
    </style>
 </head>
 <body class="left-sidebar-grid">
-    <header class="header"><img src="images/SCSN logo 2021_header_2.png" width="120" height="130" alt="SCSN"><h1>SCSN Network Summary</h1>
-      <time id="nt"></time>
-    </header>
-    <main class="main-content" >  
-      <button id="disconnect">Disconnect</button>
-      <button id="pause">Pause</button>
-      Packets: <span id="numPackets">0</span>
-      <div id="realtime"></div>
-    </main>
-    <section class="left-sidebar">
-      <error-text></error-text>
-      <h3>Station and Recent Earthquake Map</h3>
-      <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5" 
-        tileUrl="https://services.arcgisonline.com/arcgis/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
-        tileAttribution="Tiles © Esri — Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri" >
-      </sp-station-quake-map>
-      <map-legend></map-legend>
-      <div class="quaketbl">
+  <header class="header">
+    <h1 >SCSN Quake-O-Scope</h1>
+  </header>
+  <left-header class="left-header">
+    <a href="https://www.scsn.org"><img  src="images/SCSN-logo-2021_header_2.png" width="60" height="65" alt="SCSN"></a>
+  </left-header>
+  <right-header class="right-header">
+    <a class=" scedc" href="https://scedc.caltech.edu/" target="blank">SCEDC</a>
+  </right-header>
+  <main class="main-content">
+    <button id="disconnect">Disconnect</button>
+    <button id="pause">Pause</button>
+    Packets: <span id="numPackets">0</span>
+    <time id="nt"></time>
+    <div id="realtime"></div>
+  </main>
+  <section class="left-sidebar">
+    <error-text></error-text>
+    <h3>Station and Recent Earthquake Map</h3>
+    <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
+      tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community" >
+    </sp-station-quake-map>
+    <map-legend></map-legend>
+    <div class="quaketbl">
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
-      <sp-quake-table id="quake6h_ca" class="fixedheight" height="150px"></sp-quake-table> 
-      </div>     
+      <sp-quake-table id="quake6h_ca"></sp-quake-table>
       <h3 class="tblheader">California Regional Earthquakes with Magnitude >= 3 in the last 7 days</h3>
-      <sp-quake-table id="quake7d_ca_mag3" class="fixedheight"></sp-quake-table></div>
+      <sp-quake-table id="quake7d_ca_mag3"></sp-quake-table>
       <h3 class="tblheader">Worldwide Earthquakes with Magnitude >= 5.5 in the last 7 days</h3>
-      <sp-quake-table id="quake7d_mag5_5" class="fixedheight"></sp-quake-table>
-
-    </section>
-    <footer class="footer">Footer</footer>
+      <sp-quake-table id="quake7d_mag5_5"></sp-quake-table>
+    </div>
+  </section>
+  <footer class="footer">
+    <a href="https://www.caltech.edu" target="_blank">
+      <img src="images/caltech_logo.png" height="92" alt="Caltech" >
+    </a>
+    <a href="https://www.seismolab.caltech.edu" target="_blank">
+      <img src="images/seismo_lab_logo.png" height="92" alt="SeismoLab">
+    </a>
+    <a href="https://usgs.gov" target="_blank">
+      <img src="images/usgs_logo.png" height="72" alt="USGS">
+    </a>
+  </footer>
   <script type="module" src="js/waveform.js"></script>
-  <script type="module" src="js/event_map_table.js"></script>
+  <!--<script type="module" src="js/event_map_table.js"></script>-->
   </body>
 </html>

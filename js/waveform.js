@@ -155,7 +155,8 @@ let getEvent = function () {
   })
 }
 
-let eventTimer = setInterval(getEvent, 120000);
+//Get event picks
+//let eventTimer = setInterval(getEvent, 120000);
 
 let allStations = Array.from(sp.stationxml.allStations(networkList));
 mymap.addStation(allStations);
@@ -167,14 +168,14 @@ let setStylesOnRedraw = function(el) {
   let bgcolortoggle = true;
   for (let oi of orgItems) {
     bgcolortoggle=!bgcolortoggle;
-    oi.addStyle(`sp-seismograph{min-height:100px;}`);
+    oi.addStyle(`sp-seismograph{ border:1px solid #eeeeee; margin:1px 2px 1px 2px; background-color:#fff }`);
     oi.getContainedPlotElements().forEach((pe) => {
       pe.addStyle(`sp-seismograph .marker.pickPP polygon { fill: rgba(106, 90, 205, 0.4);}`);
     })
       
-    if (bgcolortoggle){
+    /*if (bgcolortoggle){
       oi.addStyle(`sp-seismograph{background-color:#ededed;}`);
-    }
+    }*/
   }
 }
 
@@ -182,37 +183,49 @@ let realtimeDiv = document.getElementById("realtime");
 
 rtDisp = sp.animatedseismograph.createRealtimeDisplay(rtConfig);
 realtimeDiv.appendChild(rtDisp.organizedDisplay);
-rtDisp.organizedDisplay.setOnRedraw(setStylesOnRedraw);
-rtDisp.organizedDisplay.overlayby=sp.organizeddisplay.OVERLAY_COMPACT;
+rtDisp.organizedDisplay.onRedraw = setStylesOnRedraw;
+rtDisp.organizedDisplay.overlayby=sp.organizeddisplay.OVERLAY_INDIVIDUAL;
 rtDisp.organizedDisplay.draw();
 rtDisp.animationScaler.minRedrawMillis =
   sp.animatedseismograph.calcOnePixelDuration(rtDisp.organizedDisplay);
 rtDisp.animationScaler.animate();
 const seisConfig = rtDisp.organizedDisplay.seismographConfig;
+
 //const lts = seisConfig.linkedTimeScale;
 seisConfig.linkedAmplitudeScale = new sp.scale.IndividualAmplitudeScale();
 seisConfig.xGridLines=true;
 // uncomment below to hide the xaxis
 //seisConfig.isXAxis = false;
-seisConfig.margin = {top:5, right: 10, bottom:18, left:85};
+seisConfig.margin = {top:5, right: 10, bottom:5, left:85};
 seisConfig.maxHeight = 100;
-seisConfig.xLabel = '';
+seisConfig.xLabel = null;
+seisConfig.isXAxis = false;
+seisConfig.yLabel = "Amplitude";
+seisConfig.ySublabelIsUnits = false;
 seisConfig.lineColors = [
-      "royalblue",
-      "mediumturquoise",
-      "chartreuse",
-      "peru",
-      "skyblue",
-      "olivedrab",
-      "goldenrod",
-      "firebrick",
-      "darkcyan",
-      "chocolate",
-      "darkmagenta",
-      "mediumseagreen",
-      "rebeccapurple",
-      "sienna",
-      "orchid",];
+    "#1c4b82",
+    "#00879e",
+    "royalblue",
+    "mediumturquoise",
+    "chartreuse",
+    "peru",
+    "skyblue",
+    "olivedrab",
+    "goldenrod",
+    "firebrick",
+    "darkcyan",
+    "chocolate",
+    "darkmagenta",
+    "mediumseagreen",
+    "rebeccapurple",
+    "sienna",
+    "orchid",];
+
+const bottomSeisConfig = seisConfig.clone();
+bottomSeisConfig.margin.bottom=18;
+bottomSeisConfig.isXAxis = true;
+
+rtDisp.organizedDisplay.bottomSeismographConfig = bottomSeisConfig;
 
 // display now time
 const n_span = document.getElementById("nt");

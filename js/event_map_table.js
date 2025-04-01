@@ -7,20 +7,23 @@ const settings = await resSettings.json()
 
 const mymap = document.querySelector("sp-station-quake-map");
 let QUAKE_COL = sp.infotable.QUAKE_COLUMN;
-
+console.log("packets", numPackets);
 //mymap.magScale(2);
 mymap.addStyle(`
   div.stationMapMarker {
-    color: #3c1308;
+    color: #1c4b82;
     width: 5px;
     height: 5px;
-    opacity: 0.8;
+    opacity: 0.7;
   }
 
-.leaflet-marker-icon {
-  width:7px;
-  height:7px;
-}
+  .leaflet-marker-icon {
+    width:17px;
+    height:17px;
+  }
+  .leaflet-control-attribution {
+      font-size:8px;
+  }
   path.quakeMapMarker {
     fill-opacity: 0.6;
     stroke-width:1px;
@@ -59,6 +62,12 @@ mymap.addStyle(`
     }  
 `);
 
+
+let quakeTableElems = document.querySelectorAll("sp-quake-table");
+for (let elem of quakeTableElems) {
+  elem.addStyle(`table {height:180px; } 
+  table tr td {padding:1px 5px} `);
+}
 
 function updateNumPackets() {
   numPackets++;
@@ -183,21 +192,32 @@ let quakes2map = function(url, errorSel){
     });
 }
 
+let customDateFormat = function (datetimeobj) {
+  return datetimeobj.toISODate() + ' ' + datetimeobj.toLocaleString(sp.luxon.DateTime.TIME_24_WITH_SECONDS);
+}
 let columnLabels = new Map();
 columnLabels.set(QUAKE_COL.EVENTID, "EventID");
-columnLabels.set(QUAKE_COL.TIME, "Time");
+columnLabels.set(QUAKE_COL.TIME, "Time (UTC)");
 columnLabels.set(QUAKE_COL.LAT, "Lat");
 columnLabels.set(QUAKE_COL.LON, "Lon");
-columnLabels.set(QUAKE_COL.MAGANDTYPE, "Mag");
-columnLabels.set(QUAKE_COL.DEPTHNOUNIT, "Depth (km)");
+columnLabels.set(QUAKE_COL.MAG, "Mag, Type");
+columnLabels.set(QUAKE_COL.DEPTH, "Depth (km)");
+
+let columnValues = new Map();
+columnValues.set(QUAKE_COL.TIME, q => customDateFormat(q.time));
+columnValues.set(QUAKE_COL.DEPTH, q => sp.infotable.depthNoUnitFormat.format(q.depthKm));
+columnValues.set(QUAKE_COL.MAG, 
+  q => {let magtype = q.magnitude.type ? " " + q.magnitude.type : "";
+        let mag = sp.infotable.magFormat.format(q.magnitude.mag) + magtype;
+        return mag; });
 
 let quakes2table = function (url, quaketblid) {
   let elem = document.querySelector("sp-quake-table#" + quaketblid);
-  elem.addStyle('sp-quake-table  {height:150px;}')
   loadEventJson(url)
     .then((quakes) => {
       elem.quakeList = quakes;
       elem.columnLabels = columnLabels;
+      elem.columnValues = columnValues;
     })
 }
 let buildEventMapAndTable = function () {
@@ -265,12 +285,12 @@ async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
   }
 }
 
-await addGeoJsonLayer2map("SCSN Polygon", "../map_layers/SCboundary.json", "scsn-polygon");
-await addGeoJsonLayer2map("CA Faults", "../map_layers/ca_faults.json", "scsn-ca-faults");
-await addGeoJsonLayer2map("RidgeCrest DAS Array", "../map_layers/Ridgecrest_waterfall_array_1.geojson", "scsn-das");
+await addGeoJsonLayer2map("SCSN Polygon", "http://localhost:8000/map_layers/SCboundary.json", "scsn-polygon");
+await addGeoJsonLayer2map("CA Faults", "http://localhost:8000/map_layers/ca_faults.json", "scsn-ca-faults");
+await addGeoJsonLayer2map("RidgeCrest DAS Array", "http://localhost:8000/map_layers/Ridgecrest_waterfall_array_1.geojson", "scsn-das");
 mymap.drawGeoJsonLayers();
 mymap.drawLayers();
 
 buildEventMapAndTable();
 // Refresh the map and table every minute
-let eventTimer = setInterval(buildEventMapAndTable, 60000);
+//let eventTimer = setInterval(buildEventMapAndTable, 60000);
