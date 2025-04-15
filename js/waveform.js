@@ -9,6 +9,8 @@ let paused = false;
 let stopped = true;
 let rtDisp = null;
 
+
+
 function updateNumPackets() {
   numPackets++;
   document.querySelector("#numPackets").textContent = numPackets;
@@ -246,34 +248,44 @@ let slCloseHandler = function(evt) {
   console.log(' seed link connection closed ', evt);
 }
 
+let slConnect = function() {
+  console.log(" in slconnect");
+  document.querySelector("button#disconnect").textContent = "Disconnect";
+  if (!seedlink) {
+    seedlink = new sp.seedlink.SeedlinkConnection(
+      settings.SEEDLINK_URL,
+      selConfigs,
+      (packet) => {
+        rtDisp.packetHandler(packet);
+        updateNumPackets();
+      },
+      slErrorHandler,
+      slCloseHandler
+    );
+  }
+  if (seedlink) {
+    const start = sp.luxon.DateTime.utc().minus(duration);
+    seedlink.setTimeCommand(start)
+    seedlink.connect();
+  }
+}
+
+let slDisconnect = function() {
+  console.log("in in slDisconnect");
+  document.querySelector("button#disconnect").textContent = "Reconnect";
+  if (seedlink) {
+    seedlink.close();
+  }
+}
 let toggleConnect = function () {
+  console.log("In toggleConnect");
   stopped = !stopped;
   const btnConnect = document.querySelector("button#disconnect");
 
   if (stopped) {
-    document.querySelector("button#disconnect").textContent = "Reconnect";
-    if (seedlink) {
-      seedlink.close();
-    }
+    slDisconnect();
   } else {
-    document.querySelector("button#disconnect").textContent = "Disconnect";
-    if (!seedlink) {
-      seedlink = new sp.seedlink.SeedlinkConnection(
-        settings.SEEDLINK_URL,
-        selConfigs,
-        (packet) => {
-          rtDisp.packetHandler(packet);
-          updateNumPackets();
-        },
-        slErrorHandler,
-        slCloseHandler
-      );
-    }
-    if (seedlink) {
-      const start = sp.luxon.DateTime.utc().minus(duration);
-      seedlink.setTimeCommand(start)
-      seedlink.connect();
-    }
+    slConnect();
   }
 }; // end toggleConnect
 
@@ -301,6 +313,23 @@ let togglePause = function () {
   }
 };
 
+document.addEventListener("visibilitychange", () => {
+  console.log("end of script document.hidden", sp.luxon.DateTime.utc().toISO() , document.hidden);
+  if (document.hidden) {
+    console.log("paused");
+    document.querySelector("button#pause").textContent = "Play";
+    rtDisp.animationScaler.pause();
+    slDisconnect();
+  }
+  else {
+    console.log("resumed");
+    document.querySelector("button#pause").textContent = "Pause";
+    rtDisp.animationScaler.animate();    
+    slConnect();
+  }
+  // Modify behavior…
+});
 // go
 toggleConnect();
 getEvent();
+
