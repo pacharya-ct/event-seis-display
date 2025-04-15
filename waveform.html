@@ -12,10 +12,12 @@
     sp-quake-table {
       --even-row-background: #ecf8f9;
     }
-    sp-station-quake-map {
-      height: 800px;
+    sp-station-quake-map#regionalmap {
+      height: 550px;
     }
-
+    sp-station-quake-map#worldmap {
+      height: 350px;
+    }
     /* Non working styles. 
     change the seismograph text style, 
     */
@@ -46,12 +48,16 @@
   <section class="left-sidebar">
     <error-text></error-text>
     <h3>Station and Recent Earthquake Map</h3>
-    <sp-station-quake-map centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
+    <sp-station-quake-map id="regionalmap" centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
       tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community" >
+      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
+    </sp-station-quake-map>
+    <sp-station-quake-map id="worldmap" centerLat="20" centerLon="-118" zoomLevel="1" fitBounds="true" magScale="2.5"
+      tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
     </sp-station-quake-map>
     <map-legend></map-legend>
-    <div class="quaketbl">
+    <div>
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
       <sp-quake-table id="quake6h_ca"></sp-quake-table>
       <h3 class="tblheader">California Regional Earthquakes with Magnitude >= 3 in the last 7 days</h3>
@@ -72,6 +78,6 @@
     </a>
   </footer>
   <script type="module" src="js/waveform.js"></script>
-  <!--<script type="module" src="js/event_map_table.js"></script>-->
+  <script type="module" src="js/event_map_table.js"></script>
   </body>
 </html>

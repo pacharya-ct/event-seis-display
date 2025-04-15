@@ -74,11 +74,11 @@ div#realtime {
 /* tablet breakpoint */
 @media (min-width:768px) {
     .left-sidebar-grid {
-        grid-template-columns:repeat(6, 1fr);
+        grid-template-columns:repeat(7, 1fr);
         grid-template-areas:
-            'lhd hd hd hd hd rhd'
-            'sd sd main main main main'
-            'lft ft ft ft ft rft';
+            'lhd hd hd hd hd hd rhd'
+            'sd sd main main main main main'
+            'lft ft ft ft ft ft rft';
     }
 }
 /* end grid container*/
@@ -93,14 +93,6 @@ map-legend {
   margin: 0;
   padding: 0;
 }
-/*
-div.quaketbl  {
-  height: 150px;
-  overflow:hidden;
-  overflow-y: scroll;
-  margin-top: 3px;
-}
-*/
 
 header h1 {
   font-size:3.5em;
@@ -109,8 +101,6 @@ header h1 {
   text-align:center;
   color:#536878;
 }
-
-
 a.scedc{
   color: #ff6d1e;
   text-decoration: none; 
@@ -124,7 +114,11 @@ time {
   display:inline;
 }
 section.left-sidebar h3 {
-  font-size: 1.2em;
-  margin: 0.5em;
+  font-size: 1.3em;
+  margin: 1em 0.5em 0.5em 0.5em;
   text-align: center;
+  color:#536878;
+}
+section.left-sidebar div {
+    text-align: center;
 }
