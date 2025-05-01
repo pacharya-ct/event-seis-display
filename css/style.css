@@ -109,9 +109,12 @@ a.scedc{
   line-height: 100%;
 }
 
-time {
+.float-right {
   float:right;
   display:inline;
+}
+time{
+    margin-left:2em;
 }
 section.left-sidebar h3 {
   font-size: 1.3em;

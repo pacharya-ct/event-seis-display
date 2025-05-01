@@ -1,0 +1,23 @@
+export const settings = Object.freeze({
+  "RS_URL": "https://export2.gps.caltech.edu/ringserver",
+  "SEEDLINK_URL": "wss://export2.gps.caltech.edu/ringserver/seedlink",
+  "FDSN_WS": "service.scedc.caltech.edu",
+  "EVENT_WS": "service.scedc.caltech.edu",
+  "DEFAULT_RT_DURATION": "PT60M",
+  "MAX_RT_DURATION": "PT120M",
+  "CLEAR_DURATION": "PT5M",
+  "REFRESH_RATE": "60000",
+  "QUAKE_JSON_REGIONAL": "feeds/regional_7days.json",
+  "QUAKE_JSON_GLOBAL": "feeds/global_7days_mag5_5.json",
+  "QUAKE_AGE_LEVELS": [{"label": "Last Hour", "name": "quake-last-hour", "duration": "PT1H", "color": "#ff0000"},
+                {"label": "Last Day", "name": "quake-last-day", "duration": "P1D", "color": "#0000ff"},
+                {"label": "Last Week", "name": "quake-last-week", "duration": "P1W", "color": "#ffff00"}],
+  "QUAKE_MAG_LEVELS": [1, 3, 5, 7, 9],
+  "GEOJSON_LAYERS": [{"label": "SCSN Polygon", "url": "map_layers/SCboundary.json", 
+      "name": "scsn-polygon", "color": "#ff6d1e", "strokeWidth": "2px"},
+      {"label": "CA Faults", "url": "map_layers/ca_faults.json", 
+      "name": "scsn-ca-faults", "color": "#9e9e9e", "strokeWidth": "1px"},
+      {"label": "RidgeCrest DAS Array", "url": "map_layers/Ridgecrest_waterfall_array_1.geojson", 
+      "name": "scsn-ridgecrest-das", "color": "#ff0000", "strokeWidth": "2px"},] 
+});
+/* use these settings in both the files*/

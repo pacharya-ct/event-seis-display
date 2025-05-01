@@ -41,8 +41,16 @@
   <main class="main-content">
     <button id="disconnect">Disconnect</button>
     <button id="pause">Pause</button>
-    Packets: <span id="numPackets">0</span>
-    <time id="nt"></time>
+    Duration: <select id="id_sel_duration">
+      <option value="PT10M">10 mins</option>
+      <option value="PT30M">30 mins</option>
+      <option value="PT60M">60 mins</option>
+      <option value="PT90M">90 mins</option>
+      <option value="PT120M">120 mins</option>
+    </select>
+    <span class="float-right">Packets: <span id="numPackets">0</span>
+    <time id="nt"></time></span>
+    <div id="id_div_channels"><stream-multi-selector></stream-multi-selector></div>
     <div id="realtime"></div>
   </main>
   <section class="left-sidebar">
@@ -60,8 +68,10 @@
     <div>
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
       <sp-quake-table id="quake6h_ca"></sp-quake-table>
+    </div><div>
       <h3 class="tblheader">California Regional Earthquakes with Magnitude >= 3 in the last 7 days</h3>
       <sp-quake-table id="quake7d_ca_mag3"></sp-quake-table>
+    </div><div>
       <h3 class="tblheader">Worldwide Earthquakes with Magnitude >= 5.5 in the last 7 days</h3>
       <sp-quake-table id="quake7d_mag5_5"></sp-quake-table>
     </div>
@@ -77,6 +87,7 @@
       <img src="images/usgs_logo.png" height="72" alt="USGS">
     </a>
   </footer>
+  <script type="module" src="js/stream_multi_selector.js"></script>
   <script type="module" src="js/waveform.js"></script>
   <script type="module" src="js/event_map_table.js"></script>
   </body>
