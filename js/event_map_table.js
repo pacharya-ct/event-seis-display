@@ -1,6 +1,6 @@
 import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
 import {updateQuakesAndPicks} from "./waveform.js";
-import {logDebug, logWarn, logError, drawLegend} from "./utils.js";
+import {logDebug, logInfo, logWarn, logError, drawLegend} from "./utils.js";
 import {settings} from "./constants.js";
 
 const errorSel = "section.left-sidebar error-text";
@@ -10,16 +10,17 @@ const mymap = document.querySelector("sp-station-quake-map#regionalmap");
 const myworldmap = document.querySelector("sp-station-quake-map#worldmap");
 const QUAKE_COL = sp.infotable.QUAKE_COLUMN;
 
-// Use for filter regional quake data to build quake tables 
+// Use for filter regional quake data to build quake tables
 const localRegion = /^ci/i;
 const duration6h = sp.luxon.Duration.fromObject({"hours": 6});
 const duration7d = sp.luxon.Duration.fromObject({"days": 7});
 
 //Constants used by the RT waveform. event age has to be newer than MAX_RT_DURATION
-const durationPick = sp.luxon.Duration.fromISO(settings.MAX_RT_DURATION);
+const durationMaxRT = sp.luxon.Duration.fromISO(settings.MAX_RT_DURATION);
 //how to often to check and clear expired events and picks
 const durationClear = sp.luxon.Duration.fromISO(settings.CLEAR_DURATION);
 
+// define and add styles to maps and quake tables.
 let mapstyle = `div.stationMapMarker {
     color: #1c4b82;
     width: 5px;
@@ -59,15 +60,19 @@ myworldmap.addStyle(mapstyle);
 
 const quakeTableElems = document.querySelectorAll("sp-quake-table");
 for (let elem of quakeTableElems) {
-  elem.addStyle(`table {height:130px; margin:0 auto;} 
-  table tr td {padding:1px 5px} `);
+  elem.addStyle(`table.wrapper {table-layout:fixed; width: 100%; }
+  table tr td {padding:1px 5px}
+  thead th:nth-child(1) {width: 15%;}
+  thead th:nth-child(2) {width: 20%;}
+  thead th:nth-child(3), thead th:nth-child(4), thead th:nth-child(5), thead th:nth-child(6) {width: 10%;}
+  thead th:nth-child(7) {width: 25%;}`);
 }
 
 function isValidJson (jsonData) {
   return true;
-  // TODO Needs to be filled 
+  // TODO Needs to be filled
 }
-  
+
 function parseEventJson(jsonData) {
   let quakeList = [];
   for (let entry of jsonData) {
@@ -112,7 +117,6 @@ async function loadQuakeJson(url) {
   }
 }
 
-
 function quakes2map(quakeList, mapElem) {
   let now = sp.luxon.DateTime.utc();
   let quakes1hour = [];
@@ -133,10 +137,10 @@ function quakes2map(quakeList, mapElem) {
       }
     }
   }
-  // all quakes could be added in one go like this 
+  // all quakes could be added in one go like this
   // mapElem.addQuake(quakes); but that has not been done
-  // because quakemarkers need to be colored differently based 
-  // on how recent they are. 
+  // because quakemarkers need to be colored differently based
+  // on how recent they are.
   mapElem.quakeList=[]; //clear previously loaded quakes (if any)
 
   for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
@@ -145,28 +149,6 @@ function quakes2map(quakeList, mapElem) {
   }
   mapElem.drawQuakeLayer();
 }
-
-let customDateFormat = function (datetimeobj) {
-  return datetimeobj.toISODate() + ' ' + datetimeobj.toLocaleString(sp.luxon.DateTime.TIME_24_WITH_SECONDS);
-}
-let columnLabels = new Map();
-columnLabels.set(QUAKE_COL.EVENTID, "EventID");
-columnLabels.set(QUAKE_COL.TIME, "Time (UTC)");
-columnLabels.set(QUAKE_COL.LAT, "Lat");
-columnLabels.set(QUAKE_COL.LON, "Lon");
-columnLabels.set(QUAKE_COL.MAG, "Mag, Type");
-columnLabels.set(QUAKE_COL.DEPTH, "Depth (km)");
-columnLabels.set(QUAKE_COL.DESC, "Desc");
-
-let columnValues = new Map();
-columnValues.set(QUAKE_COL.TIME, q => customDateFormat(q.time));
-columnValues.set(QUAKE_COL.DEPTH, q => sp.infotable.depthNoUnitFormat.format(q.depthKm));
-columnValues.set(QUAKE_COL.MAG, 
-  q => {let magtype = q.magnitude.type ? " " + q.magnitude.type : "";
-        let mag = sp.infotable.magFormat.format(q.magnitude.mag) + magtype;
-        return mag; });
-
-columnValues.set(QUAKE_COL.DESC, q => q.description);
 
 async function quakes2table (quakeList, quaketblid) {
   let elem = document.querySelector("sp-quake-table#" + quaketblid);
@@ -180,7 +162,7 @@ async function buildEventMapAndTable() {
   quakes2map(quakesRegional, mymap);
   quakes2map(quakesGlobalM5_5, myworldmap);
 
-  //Filtering for tables: 1. local quakes in last 6h, 
+  //Filtering for tables: 1. local quakes in last 6h,
   //    2. local quakes in last 7 days with mag >=3
   let now = sp.luxon.DateTime.utc();
   let quakes6hLocal = [];
@@ -194,7 +176,7 @@ async function buildEventMapAndTable() {
       quakes7dLocalM3.push(quake);
     }
     //Get picks for CI events in the last 2 hours
-    if ((howOld <= durationPick) 
+    if ((howOld <= durationMaxRT)
         && (localRegion.test(quake.eventId))){
       let id = quake.eventId.replace(localRegion, '');
       if (!quakesForRT.has(id)) {
@@ -205,23 +187,20 @@ async function buildEventMapAndTable() {
   quakes2table(quakes6hLocal, "quake6h_ca")
   quakes2table(quakes7dLocalM3, "quake7d_ca_mag3")
   quakes2table(quakesGlobalM5_5, "quake7d_mag5_5");
-
-  // array.filter works fine, but it is internally looping 
+  // array.filter works fine, but it is internally looping
   // over the entire array each time a filter is needed.
-  // and since we have multiple filters, running the classic for loop 
+  // and since we have multiple filters, running the classic for loop
   // and if/elseif is more efficient.
   /*
   let quakes6hLocal = quakeList.filter(function (quake) {
     return (now - quake.time <= duration6h);
   });
-
   let quakes7dLocalM3 = quakeList.filter(function (quake) {
     return ((now - quake.time <= duration7d) &&
       quake.magnitude.mag >= 3.0);
   });
   */
 }
-
 async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
   try {
     logDebug("Fetching geojsonlayer: ", geojsonurl);
@@ -240,12 +219,12 @@ async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
 function clearQuakesForRT() {
   const now = sp.luxon.DateTime.utc();
   let expired = [];
-  // check when was the last time quakes were cleared 
-  // to prevent it from running too often 
+  // check when was the last time quakes were cleared
+  // to prevent it from running too often
   if ((now - lastcleared) >= durationClear) {
     for (const[id, quake] of quakesForRT.entries()) {
-      //check if quake older than "durationPick" time
-      if ((now - quake.time) >= durationPick) {
+      //check if quake older than "durationMaxRT" time
+      if ((now - quake.time) >= durationMaxRT) {
         expired.push(id);
       }
     }
@@ -257,22 +236,20 @@ function clearQuakesForRT() {
     lastcleared = now;
   }
 }
-async function getEventPicks(eventid) {
-  logDebug(">>>> getEventPicks with eventid:", eventid);
+async function getEventPicks(eventId) {
+  logDebug(">>>> getEventPicks with eventId:", eventId);
   if (!settings.EVENT_WS) {
     logWarn('Event Webservice is not defined. Skip fetching picks');
     return;
   }
+  if (!eventId) {
+    logWarn('Event ID not provided. Skip fetching picks');
+    return;
+  }
   //Fetch from ws only if it is not already loaded into quakesForRT
-  if (!quakesForRT.has(eventid)) {
+  if (!quakesForRT.has(eventId)) {
     let eventQuery = new sp.fdsnevent.EventQuery(settings.EVENT_WS);
-    if (eventid) {
-      eventQuery.eventId(eventid);
-    }
-    else {
-      //get events using the max time period of the seisograph display
-      eventQuery.startTime(sp.luxon.DateTime.utc() - durationPick);
-    }
+    eventQuery.eventId(eventId);
     eventQuery.includeArrivals(true);
     eventQuery.formURL();
     let allPickNetStas = new Set();
@@ -291,16 +268,42 @@ async function getEventPicks(eventid) {
     }
     clearQuakesForRT();
     updateQuakesAndPicks(quakesForRT);
-    logDebug("Picked on channels: ", allPickNetStas);
+    logInfo("Picked on channels: ", allPickNetStas);
   }
   logDebug("<<<< getEventPicks");
 }
 
+// Define the columns for the quake info tables
+let customDateFormat = function (datetimeobj) {
+  return datetimeobj.toISODate() + ' ' + datetimeobj.toLocaleString(sp.luxon.DateTime.TIME_24_WITH_SECONDS);
+}
+let columnLabels = new Map();
+columnLabels.set(QUAKE_COL.EVENTID, "EventID");
+columnLabels.set(QUAKE_COL.TIME, "Time (UTC)");
+columnLabels.set(QUAKE_COL.LAT, "Lat");
+columnLabels.set(QUAKE_COL.LON, "Lon");
+columnLabels.set(QUAKE_COL.MAG, "Mag, Type");
+columnLabels.set(QUAKE_COL.DEPTH, "Depth (km)");
+columnLabels.set(QUAKE_COL.DESC, "Desc");
+
+let columnValues = new Map();
+columnValues.set(QUAKE_COL.EVENTID, q => q.eventId);
+columnValues.set(QUAKE_COL.TIME, q => customDateFormat(q.time));
+columnValues.set(QUAKE_COL.LAT, q => sp.infotable.latlonFormat.format(q.latitude));
+columnValues.set(QUAKE_COL.LON, q => sp.infotable.latlonFormat.format(q.longitude));
+columnValues.set(QUAKE_COL.DEPTH, q => sp.infotable.depthNoUnitFormat.format(q.depthKm));
+columnValues.set(QUAKE_COL.MAG,
+  q => {let magtype = q.magnitude.type ? " " + q.magnitude.type : "";
+        let mag = sp.infotable.magFormat.format(q.magnitude.mag) + magtype;
+        return mag; });
+
+columnValues.set(QUAKE_COL.DESC, q => q.description);
+
+// Add geojson layers
 for (let layer of settings.GEOJSON_LAYERS) {
   await addGeoJsonLayer2map(layer.label, layer.url, layer.name);
 }
 mymap.drawGeoJsonLayers();
-mymap.drawLayers();
 drawLegend(mymap);
 
 buildEventMapAndTable();

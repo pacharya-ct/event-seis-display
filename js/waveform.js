@@ -1,6 +1,6 @@
 import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
 import {settings} from "./constants.js";
-import {logDebug, logWarn, logError} from "./utils.js";
+import {logDebug, logInfo, logWarn, logError} from "./utils.js";
 
 let sharedData = {"duration": null, 
   "networks": [],
@@ -36,27 +36,40 @@ function updateNumPackets() {
   numPackets++;
   document.querySelector("#numPackets").textContent = numPackets;
 }
-
+/*
 const resChannels = await fetch('../conf/channellist.json');
 const jsonData = await resChannels.json();
-sharedData.streams = jsonData["channellist"];
+const defaultPreset = jsonData["defaultPreset"];
+const presetChanLists = jsonData["presetChanLists"];
+*/
+
 sharedData.duration = sp.luxon.Duration.fromISO(settings.DEFAULT_RT_DURATION);
-
+await getAvailStreams(settings.PRESET_CHAN_LISTS, settings.DEFAULT_CHAN_LIST);
+//this needs to be a copy and not a reference to the same object. 
+sharedData.streams = new Set(streamSelector.getSelectedStreams());
 buildMapAndWaveforms(sharedData);
-getAvailStreams(sharedData.streams);
 
-async function getAvailStreams(selStreams) {
+async function getAvailStreams(presetChanLists, defaultPreset) {
   logDebug(">>>> In getAvailStreams");
+  
   const rs = new sp.ringserverweb.RingserverConnection(settings.RS_URL);
-  streamSelector.setSelectedStreams(selStreams);
+  for (const pcl of presetChanLists) {
+    streamSelector.addPresetStreamSet(pcl["name"], pcl["channels"]);
+  }
+  streamSelector.selectPreset(defaultPreset);
+  
   rs.pullStreams('CI..*').then((o) => {
     streamSelector.setStreamStats(o.streams);
   });
+  
   streamSelector.setDoneAction(updateStreams);
   logDebug("<<<< Out getAvailStreams");
 }
 
 async function getFDSNNetworkList (streams, duration) {
+  if (streams.size == 0) {
+    return [];
+  }
   let netCodes = new Set();
   let staCodes = new Set();
   let locCodes = new Set();
@@ -158,7 +171,6 @@ function addPicksToWaveform() {
     // addQuake does not clear prev entries, nor avoid dups.
     // sdd.addQuake(quakeList);
     let netsta = sdd.networkCode +'.' + sdd.stationCode;
-    //console.log('   checking netsta ', netsta);
     let markers = [];
     for (const quake of quakeList) {
       for (const pick of quake.pickList) {
@@ -181,7 +193,7 @@ function addPicksToWaveform() {
 }
 
 function updRTDisplay(el) {
-  logDebug('>>>> in updRTDisplay')
+  logDebug('>>>> in updRTDisplay');
   // Set styles , should be done everytime it is redrawn in case the plot type is changed
   let orgItems = rtDisp.organizedDisplay.getDisplayItems();
   orgItems = orgItems.filter( oi => oi.plottype === sp.organizeddisplay.SEISMOGRAPH);
@@ -200,11 +212,11 @@ function updRTDisplay(el) {
   // Add picks to the waveform
   addPicksToWaveform();
 
-  logDebug('<<<< out of updRTDisplay')
+  logDebug('<<<< out of updRTDisplay');
 }
 
 function clearWaveforms() {
-  logDebug("clear waveforms ")
+  logDebug(">>> clearWaveforms ");
   if (sharedData.seedlink || !sharedData.stopped) {
     slDisconnect();
     if (rtDisp.organizedDisplay){
@@ -218,6 +230,9 @@ function drawWaveforms(data) {
   sharedData = data;
   clearWaveforms();
 
+  if (sharedData.networks.length==0){
+    return;
+  }
   const rtConfig = {
     duration: sharedData.duration,
     networkList: sharedData.networks,
@@ -226,9 +241,6 @@ function drawWaveforms(data) {
   rtDisp.organizedDisplay.tools = false;
   rtDisp.organizedDisplay.onRedraw = updRTDisplay;
   rtDisp.organizedDisplay.overlayby=sp.organizeddisplay.OVERLAY_INDIVIDUAL;
-  //rtDisp.organizedDisplay.draw();
-  rtDisp.animationScaler.minRedrawMillis =
-    sp.animatedseismograph.calcOnePixelDuration(rtDisp.organizedDisplay);
   rtDisp.animationScaler.animate();
   
   const seisConfig = rtDisp.organizedDisplay.seismographConfig;
@@ -248,7 +260,6 @@ function drawWaveforms(data) {
       "#00879e",
       "royalblue",
       ];
-
   const bottomSeisConfig = seisConfig.clone();
   bottomSeisConfig.margin.bottom=18;
   bottomSeisConfig.isXAxis = true;
@@ -259,15 +270,15 @@ function drawWaveforms(data) {
 }
 
 function slErrorHandler(error) {
-  console.log("in my error handler. seed link error ", error);
+  logWarn("in my error handler. seed link error ", error);
 }
 
 function slCloseHandler(evt) {
-  console.log(' seed link connection closed ', evt);
+  logDebug('Seed link connection closed ', evt);
 }
 
 function slConnect() {
-  logDebug(">>>> in slconnect");
+  logDebug(">>>> in slConnect");
   document.querySelector("button#disconnect").textContent = "Disconnect";
   if (!sharedData.seedlink) {
     sharedData.seedlink = new sp.seedlink.SeedlinkConnection(
@@ -291,18 +302,19 @@ function slConnect() {
     sharedData.seedlink.connect();
     sharedData.stopped = false;
   }
-  logDebug("<<<< out slconnect");
-
+  logDebug("<<<< out slConnect");
 }
 
 function slDisconnect() {
-  logDebug("in slDisconnect");
+  logDebug(">>> in slDisconnect");
   document.querySelector("button#disconnect").textContent = "Reconnect";
   if (sharedData.seedlink) {
     sharedData.seedlink.close();
     sharedData.seedlink = null;
   }
   sharedData.stopped=true;
+  let now = sp.luxon.DateTime.utc();
+  logInfo(`Seedlink disconnected at ${now}. Last packet end time: ${lastPacketReceived.miniseed.header.endTime}`);
 }
 function toggleConnect() {
   logDebug("In toggleConnect");
@@ -327,8 +339,8 @@ document
   });
 
 let togglePause = function () {
-  paused = !paused;
-  if (paused) {
+  sharedData.paused = !sharedData.paused;
+  if (sharedData.paused) {
     document.querySelector("button#pause").textContent = "Play";
     rtDisp.animationScaler.pause();
   } else {
@@ -338,19 +350,16 @@ let togglePause = function () {
 };
 /*
 document.addEventListener("visibilitychange", () => {
-  console.log("end of script document.hidden", sp.luxon.DateTime.utc().toISO() , document.hidden);
   if (document.hidden) {
-    console.log("paused");
     document.querySelector("button#pause").textContent = "Play";
     rtDisp.animationScaler.pause();
     slDisconnect();
   }
   else {
-    console.log("resumed");
     document.querySelector("button#pause").textContent = "Pause";
     rtDisp.animationScaler.animate();    
     slConnect();
   }
-  // Modify behavior…
 });
+
 */

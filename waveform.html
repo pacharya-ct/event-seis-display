@@ -8,18 +8,18 @@
     sp-organized-display {
       --sp-seismograph-height: 100px;
       background: #ecf8f9;
-    }    
+    }
     sp-quake-table {
       --even-row-background: #ecf8f9;
     }
     sp-station-quake-map#regionalmap {
-      height: 550px;
+      height: 560px;
     }
     sp-station-quake-map#worldmap {
       height: 350px;
     }
-    /* Non working styles. 
-    change the seismograph text style, 
+    /* Non working styles.
+    change the seismograph text style,
     */
     svg.seismograph text.title {
       font-size:normal;
@@ -30,13 +30,14 @@
 </head>
 <body class="left-sidebar-grid">
   <header class="header">
-    <h1>SCSN Realtime Display</h1>
+    <img align="center" src="images/PQRS_logo_o.jpg" height="90" alt="SCSN Realtime Display">
   </header>
   <left-header class="left-header">
-    <a href="https://www.scsn.org"><img  src="images/SCSN-logo-2021_header_2.png" width="60" height="65" alt="SCSN"></a>
   </left-header>
   <right-header class="right-header">
-    <a class=" scedc" href="https://scedc.caltech.edu/" target="blank">SCEDC</a>
+    <h3>Powered by:</h3>
+    <a href="https://www.scsn.org"><img  src="images/SCSN-logo-2021_header_2.png" width="60" height="65" alt="SCSN"></a>
+    <a class="scedc" href="https://scedc.caltech.edu/" target="blank">SCEDC</a>
   </right-header>
   <main class="main-content">
     <button id="disconnect">Disconnect</button>
@@ -56,7 +57,7 @@
   <section class="left-sidebar">
     <error-text></error-text>
     <h3>Station and Recent Earthquake Map</h3>
-    <sp-station-quake-map id="regionalmap" centerLat="36" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
+    <sp-station-quake-map id="regionalmap" centerLat="35" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
       tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
       tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
     </sp-station-quake-map>
@@ -67,14 +68,19 @@
     <map-legend></map-legend>
     <div>
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
+    <div class="quaketbl-wrapper">
       <sp-quake-table id="quake6h_ca"></sp-quake-table>
-    </div><div>
+    </div></div>
+    <div>
       <h3 class="tblheader">California Regional Earthquakes with Magnitude >= 3 in the last 7 days</h3>
+      <div class="quaketbl-wrapper">
       <sp-quake-table id="quake7d_ca_mag3"></sp-quake-table>
-    </div><div>
+    </div></div>
+    <div>
       <h3 class="tblheader">Worldwide Earthquakes with Magnitude >= 5.5 in the last 7 days</h3>
+      <div class="quaketbl-wrapper">
       <sp-quake-table id="quake7d_mag5_5"></sp-quake-table>
-    </div>
+    </div></div>
   </section>
   <footer class="footer">
     <a href="https://www.caltech.edu" target="_blank">

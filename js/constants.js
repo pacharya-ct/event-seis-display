@@ -18,6 +18,15 @@ export const settings = Object.freeze({
       {"label": "CA Faults", "url": "map_layers/ca_faults.json", 
       "name": "scsn-ca-faults", "color": "#9e9e9e", "strokeWidth": "1px"},
       {"label": "RidgeCrest DAS Array", "url": "map_layers/Ridgecrest_waterfall_array_1.geojson", 
-      "name": "scsn-ridgecrest-das", "color": "#ff0000", "strokeWidth": "2px"},] 
+      "name": "scsn-ridgecrest-das", "color": "#ff0000", "strokeWidth": "2px"},],
+  "PRESET_CHAN_LISTS": [
+      {"name": "Hallway",
+       "channels": ["CI_MLAC__BHZ", "CI_SHO__BHZ", "CI_ISA__BHZ", "CI_CAR__BHZ", "CI_AVM__BHZ",
+            "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_CIA__BHZ", "CI_GLA__BHZ", 
+            "CI_WMD__BHZ", "CI_SDG__BHZ", "CI_IKP__BHZ"]},
+      {"name": "Shortlist",
+       "channels": ["CI_ABL__BHZ", "CI_BAR__BHZ"]}
+   ],
+  "DEFAULT_CHAN_LIST": "Hallway"
 });
 /* use these settings in both the files*/

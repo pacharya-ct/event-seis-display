@@ -1,14 +1,12 @@
 import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
 import {settings} from "./constants.js";
 
-/*
-const resSettings = await fetch("../conf/settings.json")
-const settings = await resSettings.json()
-*/
 export function logDebug(...args) {
+  //console.log(...args);
+}
+export function logInfo(...args) {
   console.log(...args);
 }
-
 export function logWarn(...args) {
   console.warn(...args);
 }
@@ -28,7 +26,6 @@ export function logError(errorSel, ...args) {
   }
   console.error(...args);
 }
-
 
 export function addToDebug(message) {
   // when deploying to production, comment out the 
