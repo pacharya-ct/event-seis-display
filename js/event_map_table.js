@@ -8,6 +8,7 @@ const errorSel = "section.left-sidebar error-text";
 const quakesForRT = new Map();
 const mymap = document.querySelector("sp-station-quake-map#regionalmap");
 const myworldmap = document.querySelector("sp-station-quake-map#worldmap");
+const evtStatusElem = document.querySelector("span#id_evt_status");
 const QUAKE_COL = sp.infotable.QUAKE_COLUMN;
 
 // Use for filter regional quake data to build quake tables
@@ -46,13 +47,14 @@ for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
   }
 `;
 }
+const geoJsonStyleMap = new Map();
 for (let layer of settings.GEOJSON_LAYERS) {
-  mapstyle += `  path.${layer.name}{
-    stroke: ${layer.color};
-    stroke-width: ${layer.strokeWidth};
-    fill-opacity:0;
-  }
-`;
+  let styles = {
+      color: layer.color,
+      weight: layer.weight,
+      fillOpacity:0,
+    }
+  geoJsonStyleMap.set(layer.name, styles);
 }
 
 mymap.addStyle(mapstyle);
@@ -106,6 +108,7 @@ async function loadQuakeJson(url) {
     let quakejson = await response.json();
     if (isValidJson(quakejson)) {
       let quakes = parseEventJson(quakejson);
+      evtStatusElem.textContent = `Last updated: ${sp.luxon.DateTime.utc()}`;
       return quakes;
     } else {
       throw new TypeError(`Invalid data!`);
@@ -201,18 +204,21 @@ async function buildEventMapAndTable() {
   });
   */
 }
-async function addGeoJsonLayer2map(layername, geojsonurl, layerclass) {
+
+async function addGeoJsonLayer2map(layerLabel, geojsonurl, layerName) {
   try {
     logDebug("Fetching geojsonlayer: ", geojsonurl);
     let response = await fetch(geojsonurl);
     if (!response.ok) {
       throw new Error(response.status);
     }
-    let layerjson = await response.json();
-    mymap.addGeoJsonLayer(layername, layerjson, layerclass);
+    let layerJson = await response.json();
+    let styles = geoJsonStyleMap.get(layerName);
+    let sfunc = function(f) { return styles};
+    mymap.addGeoJsonLayer(layerLabel, layerJson, sfunc);
   }
   catch (e) {
-    logWarn(`Unable to fetch ${layername}.`, e);
+    logWarn(`Unable to fetch ${layerLabel}.`, e);
   }
 }
 
@@ -231,6 +237,7 @@ function clearQuakesForRT() {
     // Remove the expired quakes from the map
     for (let id of expired) {
       logDebug('Removing expired event ', id);
+      console.log('Removing expired event ', id);
       quakesForRT.delete(id);
     }
     lastcleared = now;
@@ -268,7 +275,7 @@ async function getEventPicks(eventId) {
     }
     clearQuakesForRT();
     updateQuakesAndPicks(quakesForRT);
-    logInfo("Picked on channels: ", allPickNetStas);
+    logInfo(`Eventid ${eventId}. Picked on channels: `, allPickNetStas);
   }
   logDebug("<<<< getEventPicks");
 }
@@ -306,7 +313,29 @@ for (let layer of settings.GEOJSON_LAYERS) {
 mymap.drawGeoJsonLayers();
 drawLegend(mymap);
 
-buildEventMapAndTable();
-// Refresh the map and table every minute
-let eventTimer = setInterval(buildEventMapAndTable, settings.REFRESH_RATE);
+let eventIntervalId;
+function pauseEventRefresh() {
+  clearInterval(eventIntervalId);
+  eventIntervalId = null;
+}
+function startEventRefresh() {
+  // clear any previous jobs if present
+  if (eventIntervalId) {
+    pauseEventRefresh();
+  }
+  buildEventMapAndTable();
+  // Refresh the map and table every minute
+  eventIntervalId = setInterval(buildEventMapAndTable, settings.REFRESH_RATE);
+}
+startEventRefresh();
 let lastcleared = sp.luxon.DateTime.utc();
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    pauseEventRefresh();
+  }
+  else {
+    startEventRefresh();
+  }
+});
+
