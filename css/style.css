@@ -1,15 +1,10 @@
-.sp_version {
-  float: right;
-  font-size: small;
-}
-
 body {
-    margin: 2px;
-    padding: 0;
-    height: 100%;
-    font-size: 12px;
-    font-family:"Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
-    color: #333333;
+  margin: 2px;
+  padding: 0;
+  height: 100%;
+  font-size: 12px;
+  font-family: 'Arial', sans-serif;
+  color: #333333;
 }
 div {
   background: #ffffff;
@@ -19,75 +14,64 @@ div {
 div#realtime {
   padding:0px;
 }
+
 /* start */
 /* grid container */
-.left-sidebar-grid {
-    display:grid;
-    grid-template-areas:
-        'hd'
-        'lhd'
-        'rhd'
-        'main'
-        'lsd'
-        'ft'
-        'lft'
-        'rft'
+.two-col-grid {
+  display:grid;
+  grid-template-areas:
+    'lhd'
+    'rhd'
+    'main'
+    'sd'
+    'ft'
+    'lft'
+    'rft'
 }
 
 /* general column padding */
-.left-sidebar-grid > * {
-    padding:1rem;
+.two-col-grid > * {
+  padding:1rem;
 }
 
 /* assign columns to grid areas */
-.left-sidebar-grid > .header {
-    grid-area:hd;
-    padding: 0;
-    /*background:#f97171; */
-    text-align:center;
+.two-col-grid > .main-content {
+  grid-area:main;
+  background:#fff;
 }
-.left-sidebar-grid > .left-header {
-    grid-area:lhd;
-    padding: 0.5em 0 0 1em;
+.two-col-grid > .left-header {
+  grid-area:lhd;
+  padding: 0.5em 0 0 0.5em;
 }
-.left-sidebar-grid > .right-header {
-    grid-area:rhd;
-    text-align: right;
+.two-col-grid > .right-header {
+  grid-area:rhd;
+  justify-items: right;
+  align-items: end;
+  display: inline-grid;
+  padding:1em;
 }
-.left-sidebar-grid > .right-header img{
-    grid-area:rhd;
-    padding: 0.5em 1em 0 1em;
+
+.two-col-grid > .left-sidebar {
+  grid-area:sd;
 }
-.left-sidebar-grid > .right-header h3{
-    padding: 0.5em 1em 0 1em;
-    font-size: 1.5em;
-    display: inline;
+
+.two-col-grid > .footer {
+  grid-area:ft;
+  text-align:center;
 }
-.left-sidebar-grid > .main-content {
-    grid-area:main;
-    background:#fff;
-}
-.left-sidebar-grid > .left-sidebar {
-    grid-area:sd;
-   /* background:#f5d55f;*/
-}
-.left-sidebar-grid > .footer {
-    grid-area:ft;
-    text-align:center;
-}
-.left-sidebar-grid > .footer a {
-    margin:2px 30px 2px 30px;
+.two-col-grid > .footer a {
+  margin:2px 30px 2px 30px;
 }
 
 /* tablet breakpoint */
 @media (min-width:768px) {
-    .left-sidebar-grid {
-        grid-template-columns:repeat(7, 1fr);
-        grid-template-areas:
-            'lhd lhd hd hd hd rhd rhd'
-            'sd sd main main main main main'
-            'lft ft ft ft ft ft rft';
-    }
+  .two-col-grid {
+    grid-template-columns:repeat(7, 1fr);
+    grid-template-areas:
+      'lhd rhd main main main main main'
+      'sd sd main main main main main'
+      'lft ft ft ft ft ft rft';
+  }
 }
 /* end grid container*/
 
@@ -96,39 +80,38 @@ div#realtime {
   width:5px;
   height:5px;
 }
-
 map-legend {
   margin: 0;
   padding: 0;
 }
-header h1 {
-  font-size:3.5em;
-  margin: 0.2em;
-  padding: 0;
-  text-align:center;
-  color:#536878;
+.right-header h4{
+    padding: 0 0.2em;
+    margin: 0;
+    font-size: 1em;
+    display: inline;
+    vertical-align: text-bottom;
 }
 a.scedc{
   color: #ff6d1e;
-  text-decoration: none; 
-  font-family: 'Arial', sans-serif; 
-  font-weight: 800; font-size: 2.5em; 
+  text-decoration: none;
+  font-family: 'Arial', sans-serif;
+  font-weight: 800; font-size: 2em;
   line-height: 100%;
-  padding: 1em 1em 1em 0.5em;
+  padding: 0 0.2em 0 0;
 }
-
 .float-right {
   float:right;
   display:inline;
 }
 time{
-    margin-left:2em;
+  margin-left:2em;
 }
 section.left-sidebar h3 {
   font-size: 1.4em;
   margin: 1em 0.5em 0.5em 0.5em;
   text-align: center;
-  color:#536878;
+  color: #003B4C;
+  /*color:#536878;*/
 }
 section.left-sidebar div {
   text-align: center;
@@ -139,4 +122,19 @@ div.quaketbl-wrapper{
   overflow-x:auto;
   font-size: 1.2em;
   border: none;
+}
+main.main-content span#id_status_message {
+  margin-left:4em;
+  font-weight: bold;
+  color: red;
+}
+span#id_evt_status {
+  font-weight: bold;
+  color: #003B4C;
+}
+main.main-content h1 {
+  font-weight: bold; font-size: 2.5em;
+  color: #003B4C;
+  margin: 0.2em 0 0.1em 0;
+  text-align: center;
 }

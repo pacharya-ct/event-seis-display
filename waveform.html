@@ -28,18 +28,8 @@
     }
    </style>
 </head>
-<body class="left-sidebar-grid">
-  <header class="header">
-    <img align="center" src="images/PQRS_logo_o.jpg" height="90" alt="SCSN Realtime Display">
-  </header>
-  <left-header class="left-header">
-  </left-header>
-  <right-header class="right-header">
-    <h3>Powered by:</h3>
-    <a href="https://www.scsn.org"><img  src="images/SCSN-logo-2021_header_2.png" width="60" height="65" alt="SCSN"></a>
-    <a class="scedc" href="https://scedc.caltech.edu/" target="blank">SCEDC</a>
-  </right-header>
-  <main class="main-content">
+<body class="two-col-grid">
+  <main class="main-content"><h1>SCSN Live</h1>
     <button id="disconnect">Disconnect</button>
     <button id="pause">Pause</button>
     Duration: <select id="id_sel_duration">
@@ -49,11 +39,20 @@
       <option value="PT90M">90 mins</option>
       <option value="PT120M">120 mins</option>
     </select>
+    <span id="id_status_message"></span>
     <span class="float-right">Packets: <span id="numPackets">0</span>
     <time id="nt"></time></span>
     <div id="id_div_channels"><stream-multi-selector></stream-multi-selector></div>
     <div id="realtime"></div>
   </main>
+  <lheader class="left-header">
+    <img align="center" src="images/PQRS_logo_t.png" height="120" alt="SCSN Realtime Display">
+  </lheader>
+  <rheader class="right-header"><span>
+    <h4>Powered by:</h4>
+    <a href="https://www.scsn.org"><img src="images/SCSN_logo_2021_full.png" height="35" alt="SCSN"></a>
+    <a class="scedc" href="https://scedc.caltech.edu/" target="blank">SCEDC</a></span>
+  </rheader>
   <section class="left-sidebar">
     <error-text></error-text>
     <h3>Station and Recent Earthquake Map</h3>
@@ -65,7 +64,7 @@
       tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
       tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
     </sp-station-quake-map>
-    <map-legend></map-legend>
+    <map-legend></map-legend><span class="float-right" id="id_evt_status"></span>
     <div>
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
     <div class="quaketbl-wrapper">
