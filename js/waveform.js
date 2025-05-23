@@ -282,7 +282,6 @@ function slCloseHandler(evt) {
 
 function slConnect() {
   logDebug(">>>> in slConnect");
-  document.querySelector("button#disconnect").textContent = "Disconnect";
   if (!sharedData.seedlink) {
     sharedData.seedlink = new sp.seedlink.SeedlinkConnection(
       settings.SEEDLINK_URL,
@@ -313,7 +312,6 @@ function slConnect() {
 
 function slDisconnect() {
   logDebug(">>> in slDisconnect");
-  document.querySelector("button#disconnect").textContent = "Reconnect";
   let now = sp.luxon.DateTime.utc();
   if (sharedData.seedlink) {
     sharedData.seedlink.close();
@@ -323,50 +321,13 @@ function slDisconnect() {
   sharedData.stopped=true;
   statusElem.textContent=`Disconnected at ${now}`;
 }
-function toggleConnect() {
-  logDebug("In toggleConnect");
-  if (sharedData.stopped) {
-    slConnect();
-  } else {
-    slDisconnect();
-  }
-}; // end toggleConnect
-
-document
-  .querySelector("button#disconnect")
-  .addEventListener("click", function (evt) {
-    toggleConnect();
-  });
-
-// pause
-document
-  .querySelector("button#pause")
-  .addEventListener("click", function (evt) {
-    togglePause();
-  });
-
-let togglePause = function () {
-  sharedData.paused = !sharedData.paused;
-  if (sharedData.paused) {
-    document.querySelector("button#pause").textContent = "Play";
-    rtDisp.animationScaler.pause();
-    statusElem.textContent=`Paused at ${sp.luxon.DateTime.utc()}`;
-  } else {
-    document.querySelector("button#pause").textContent = "Pause";
-    rtDisp.animationScaler.animate();
-    statusElem.textContent='';
-  }
-};
-
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    document.querySelector("button#pause").textContent = "Play";
-    rtDisp.animationScaler.pause();
     slDisconnect();
+    rtDisp.animationScaler.pause();
   }
   else {
-    document.querySelector("button#pause").textContent = "Pause";
-    rtDisp.animationScaler.animate();
     slConnect();
+    rtDisp.animationScaler.animate();
   }
 });
