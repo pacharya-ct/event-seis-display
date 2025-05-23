@@ -25,6 +25,7 @@ const mymap = document.querySelector("sp-station-quake-map");
 const realtimeDiv = document.getElementById("realtime");
 const durationElem = document.getElementById("id_sel_duration");
 const streamSelector = document.querySelector("stream-multi-selector");
+const statusElem = document.querySelector("span#id_status_message");
 
 durationElem.value=settings.DEFAULT_RT_DURATION;
 durationElem.addEventListener("change", function (evt) {
@@ -191,30 +192,22 @@ function addPicksToWaveform() {
   }
   logDebug("<<<< Out addPicksToWaveform. ");
 }
-
 function updRTDisplay(el) {
   logDebug('>>>> in updRTDisplay');
+
   // Set styles , should be done everytime it is redrawn in case the plot type is changed
   let orgItems = rtDisp.organizedDisplay.getDisplayItems();
   orgItems = orgItems.filter( oi => oi.plottype === sp.organizeddisplay.SEISMOGRAPH);
-  let bgcolortoggle = true;
   for (let oi of orgItems) {
-    bgcolortoggle=!bgcolortoggle;
     oi.addStyle(`sp-seismograph{ border:1px solid #eeeeee; margin:1px 2px 1px 2px; background-color:#fff }`);
     oi.getContainedPlotElements().forEach((pe) => {
-      pe.addStyle(`sp-seismograph .marker.pickPP polygon { fill: rgba(106, 90, 205, 0.4);}`);
+      pe.addStyle(`.marker.Ppicknew polygon{ fill: rgba(106, 90, 205, 0.4); }`, 'seis_picker');
     })
-      
-    //if (bgcolortoggle){
-    //  oi.addStyle(`sp-seismograph{background-color:#ededed;}`);
-    //}
   }
   // Add picks to the waveform
   addPicksToWaveform();
-
   logDebug('<<<< out of updRTDisplay');
 }
-
 function clearWaveforms() {
   logDebug(">>> clearWaveforms ");
   if (sharedData.seedlink || !sharedData.stopped) {
@@ -227,6 +220,7 @@ function clearWaveforms() {
   }
 }
 function drawWaveforms(data) {
+  logDebug(">>> in drawWaveforms");
   sharedData = data;
   clearWaveforms();
 
@@ -255,11 +249,19 @@ function drawWaveforms(data) {
   seisConfig.isXAxis = false;
   seisConfig.yLabel = "Amplitude";
   seisConfig.ySublabelIsUnits = false;
+  // #003B4C: caltech deep blue
+  // #00A1DF: caltech bright blue
+  // #1c4b82: color used in poster
+  // #87CEEB : skyblue - default color in seisplotjs
   seisConfig.lineColors = [
+      "#00A1DF",
+      "#87CEEB",
       "#1c4b82",
+      "#003B4C",
       "#00879e",
       "royalblue",
       ];
+  seisConfig.markerFlagpoleBase = 'bottom';
   const bottomSeisConfig = seisConfig.clone();
   bottomSeisConfig.margin.bottom=18;
   bottomSeisConfig.isXAxis = true;
@@ -267,6 +269,7 @@ function drawWaveforms(data) {
   rtDisp.organizedDisplay.bottomSeismographConfig = bottomSeisConfig;
   realtimeDiv.appendChild(rtDisp.organizedDisplay);
   slConnect();
+  logDebug("<<<< out of drawWaveforms");
 }
 
 function slErrorHandler(error) {
@@ -294,13 +297,16 @@ function slConnect() {
     );
   }
   if (sharedData.seedlink) {
-    let start = sp.luxon.DateTime.utc().minus(sharedData.duration);
+    let now = sp.luxon.DateTime.utc();
+    let start = now.minus(sharedData.duration);
     if (lastPacketReceived && lastPacketReceived.miniseed.header.endTime > start) {
       start = lastPacketReceived.miniseed.header.endTime;
     }
     sharedData.seedlink.setTimeCommand(start)
     sharedData.seedlink.connect();
     sharedData.stopped = false;
+    statusElem.textContent='';
+    logInfo(`Connected to Seedlink at ${now}.`);
   }
   logDebug("<<<< out slConnect");
 }
@@ -308,13 +314,14 @@ function slConnect() {
 function slDisconnect() {
   logDebug(">>> in slDisconnect");
   document.querySelector("button#disconnect").textContent = "Reconnect";
+  let now = sp.luxon.DateTime.utc();
   if (sharedData.seedlink) {
     sharedData.seedlink.close();
     sharedData.seedlink = null;
+    logInfo(`Disconnected from Seedlink at ${now}. Last packet end time: ${lastPacketReceived.miniseed.header.endTime}`);
   }
   sharedData.stopped=true;
-  let now = sp.luxon.DateTime.utc();
-  logInfo(`Seedlink disconnected at ${now}. Last packet end time: ${lastPacketReceived.miniseed.header.endTime}`);
+  statusElem.textContent=`Disconnected at ${now}`;
 }
 function toggleConnect() {
   logDebug("In toggleConnect");
@@ -343,12 +350,14 @@ let togglePause = function () {
   if (sharedData.paused) {
     document.querySelector("button#pause").textContent = "Play";
     rtDisp.animationScaler.pause();
+    statusElem.textContent=`Paused at ${sp.luxon.DateTime.utc()}`;
   } else {
     document.querySelector("button#pause").textContent = "Pause";
     rtDisp.animationScaler.animate();
+    statusElem.textContent='';
   }
 };
-/*
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     document.querySelector("button#pause").textContent = "Play";
@@ -357,9 +366,7 @@ document.addEventListener("visibilitychange", () => {
   }
   else {
     document.querySelector("button#pause").textContent = "Pause";
-    rtDisp.animationScaler.animate();    
+    rtDisp.animationScaler.animate();
     slConnect();
   }
 });
-
-*/
