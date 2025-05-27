@@ -152,7 +152,7 @@ async function buildMapAndWaveforms (sharedData) {
 
 
 function addPicksToWaveform() {
-  logDebug(">>>> in addPicksToWaveform");
+  logDebug(">>> in addPicksToWaveform");
 
   let sdds;
   if (!(rtDisp && sharedData.quakesAndPicks && sharedData.quakesAndPicks.size > 0)) {
@@ -190,23 +190,24 @@ function addPicksToWaveform() {
     sdd.clearMarkers();
     sdd.addMarkers(markers);
   }
-  logDebug("<<<< Out addPicksToWaveform. ");
+  logDebug("<<< Out addPicksToWaveform. ");
 }
-function updRTDisplay(el) {
-  logDebug('>>>> in updRTDisplay');
+const seismographCSS = `.marker.Ppick polygon{ fill: rgba(106, 90, 205, 0.4); }
+  .marker.Spick polygon{ fill: rgba(255, 165, 100, 0.4); }
+  svg.seismograph g.title text tspan.titleText{stroke:#003B4C; fill:#003B4C; color:#003B4C; }`;
 
+function updRTDisplay(el) {
+  logDebug('>>> in updRTDisplay. El: ', el);
   // Set styles , should be done everytime it is redrawn in case the plot type is changed
-  let orgItems = rtDisp.organizedDisplay.getDisplayItems();
-  orgItems = orgItems.filter( oi => oi.plottype === sp.organizeddisplay.SEISMOGRAPH);
-  for (let oi of orgItems) {
-    oi.addStyle(`sp-seismograph{ border:1px solid #eeeeee; margin:1px 2px 1px 2px; background-color:#fff }`);
-    oi.getContainedPlotElements().forEach((pe) => {
-      pe.addStyle(`.marker.Ppicknew polygon{ fill: rgba(106, 90, 205, 0.4); }`, 'seis_picker');
+  if (el.plottype === sp.organizeddisplay.SEISMOGRAPH) {
+    el.addStyle(`sp-seismograph{ border:1px solid #eeeeee; margin:1px 2px 1px 2px; background-color:#fff }`);
+    el.getContainedPlotElements().forEach((pe) => {
+      pe.addStyle(seismographCSS, 'pqrsSGStyle');
     })
   }
   // Add picks to the waveform
   addPicksToWaveform();
-  logDebug('<<<< out of updRTDisplay');
+  logDebug('<<< out updRTDisplay');
 }
 function clearWaveforms() {
   logDebug(">>> clearWaveforms ");
@@ -247,7 +248,7 @@ function drawWaveforms(data) {
   seisConfig.maxHeight = 100;
   seisConfig.xLabel = null;
   seisConfig.isXAxis = false;
-  seisConfig.yLabel = "Amplitude";
+  seisConfig.yLabel = "Amplitude ({{#each seisDataList}}{{ this.channel.instrumentSensitivity.inputUnits }}{{/each}})";
   seisConfig.ySublabelIsUnits = false;
   // #003B4C: caltech deep blue
   // #00A1DF: caltech bright blue
@@ -262,9 +263,11 @@ function drawWaveforms(data) {
       "royalblue",
       ];
   seisConfig.markerFlagpoleBase = 'bottom';
+  seisConfig.title = "{{#each seisDataList}}<tspan class='titleText'>{{ this.channel.nslc }} ({{ this.channel.latitude }}, {{ this.channel.longitude }})</tspan>{{else}}No Data{{/each}}";
   const bottomSeisConfig = seisConfig.clone();
   bottomSeisConfig.margin.bottom=18;
   bottomSeisConfig.isXAxis = true;
+
 
   rtDisp.organizedDisplay.bottomSeismographConfig = bottomSeisConfig;
   realtimeDiv.appendChild(rtDisp.organizedDisplay);

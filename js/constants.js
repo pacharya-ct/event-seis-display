@@ -14,18 +14,18 @@ export const settings = Object.freeze({
                 {"label": "Last Week", "name": "quake-last-week", "duration": "P1W", "color": "#ffff00"}],
   "QUAKE_MAG_LEVELS": [1, 3, 5, 7, 9],
   "GEOJSON_LAYERS": [{"label": "SCSN Polygon", "url": "map_layers/SCboundary.json", 
-      "name": "scsn-polygon", "color": "#ff6d1e", "strokeWidth": "2px"},
+      "name": "scsn-polygon", "color": "#FF6C0C", "weight": 2},
       {"label": "CA Faults", "url": "map_layers/ca_faults.json", 
-      "name": "scsn-ca-faults", "color": "#9e9e9e", "strokeWidth": "1px"},
+      "name": "scsn-ca-faults", "color": "#9e9e9e", "weight": 1},
       {"label": "RidgeCrest DAS Array", "url": "map_layers/Ridgecrest_waterfall_array_1.geojson", 
-      "name": "scsn-ridgecrest-das", "color": "#ff0000", "strokeWidth": "2px"},],
+      "name": "scsn-ridgecrest-das", "color": "#7A303F", "weight": 2},],
   "PRESET_CHAN_LISTS": [
       {"name": "Hallway",
        "channels": ["CI_MLAC__BHZ", "CI_SHO__BHZ", "CI_ISA__BHZ", "CI_CAR__BHZ", "CI_AVM__BHZ",
-            "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_CIA__BHZ", "CI_GLA__BHZ", 
+            "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_SLH__BHZ", "CI_GLA__BHZ",
             "CI_WMD__BHZ", "CI_SDG__BHZ", "CI_IKP__BHZ"]},
       {"name": "Shortlist",
-       "channels": ["CI_ABL__BHZ", "CI_BAR__BHZ"]}
+       "channels": ["CI_EML__BHZ", "CI_SDR__BHZ"]}
    ],
   "DEFAULT_CHAN_LIST": "Hallway"
 });
