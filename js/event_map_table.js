@@ -23,14 +23,13 @@ const durationClear = sp.luxon.Duration.fromISO(settings.CLEAR_DURATION);
 
 // define and add styles to maps and quake tables.
 let mapstyle = `div.stationMapMarker {
-    color: #1c4b82;
-    width: 5px;
-    height: 5px;
-    opacity: 0.7;
+    color: rgb(60,19,8,0.7);
+    stroke: black;
+    text-shadow:unset;
   }
   .leaflet-marker-icon {
-    width:17px;
-    height:17px;
+    width:10px;
+    height:10px;
   }
   .leaflet-control-attribution {
     font-size:9px;
@@ -237,7 +236,6 @@ function clearQuakesForRT() {
     // Remove the expired quakes from the map
     for (let id of expired) {
       logDebug('Removing expired event ', id);
-      console.log('Removing expired event ', id);
       quakesForRT.delete(id);
     }
     lastcleared = now;

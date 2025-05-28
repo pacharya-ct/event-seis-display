@@ -10,7 +10,7 @@ let sharedData = {"duration": null,
   "stopped": true,
   "streams": new Set()
 };
-let rtDisp;
+let rtDisp = null;
 let numPackets = 0;
 let lastPacketReceived = null;
 
@@ -192,18 +192,29 @@ function addPicksToWaveform() {
   }
   logDebug("<<< Out addPicksToWaveform. ");
 }
-const seismographCSS = `.marker.Ppick polygon{ fill: rgba(106, 90, 205, 0.4); }
+const seismographCss = `.marker.Ppick polygon{ fill: rgba(106, 90, 205, 0.4); }
   .marker.Spick polygon{ fill: rgba(255, 165, 100, 0.4); }
   svg.seismograph g.title text tspan.titleText{stroke:#003B4C; fill:#003B4C; color:#003B4C; }`;
 
-function updRTDisplay(el) {
-  logDebug('>>> in updRTDisplay. El: ', el);
+const orgDispItemCss = `sp-seismograph{
+          border:1px solid #eeeeee;
+          margin:1px 2px 1px 2px;
+          background-color:#fff }`;
+
+function updRTDisplay(orgDisp) {
+  logDebug('>>> in updRTDisplay');
   // Set styles , should be done everytime it is redrawn in case the plot type is changed
-  if (el.plottype === sp.organizeddisplay.SEISMOGRAPH) {
-    el.addStyle(`sp-seismograph{ border:1px solid #eeeeee; margin:1px 2px 1px 2px; background-color:#fff }`);
-    el.getContainedPlotElements().forEach((pe) => {
-      pe.addStyle(seismographCSS, 'pqrsSGStyle');
-    })
+  let orgItems = orgDisp.getDisplayItems();
+
+  for (let oi of orgItems) {
+    oi.onRedraw = () => {
+      if (oi.plottype === sp.organizeddisplay.SEISMOGRAPH) {
+        oi.addStyle(orgDispItemCss, "pqrsOrgDispItemStyle");
+        oi.getContainedPlotElements().forEach((pe) => {
+          pe.addStyle(seismographCss, "pqrsSeismographStyle");
+        });
+      }
+    }
   }
   // Add picks to the waveform
   addPicksToWaveform();
@@ -327,7 +338,7 @@ function slDisconnect() {
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     slDisconnect();
-    rtDisp.animationScaler.pause();
+    if (rtDisp) {rtDisp.animationScaler.pause();}
   }
   else {
     slConnect();
