@@ -70,8 +70,8 @@ class StreamMultiSelector extends HTMLElement {
       wrapper.appendChild(chkBoxLabel);
       checkboxes.push(chkBox);
     });
-
-    // buttons to allow selections of channel lists
+/*
+    // radio buttons to allow selections of channel lists
     for (const[k, presetStreams] of this.presetStreamSets.entries()) {
       // draw buttons or other selectors for the presets.
       const k_no_space = k.replace(' ', '-');
@@ -93,6 +93,7 @@ class StreamMultiSelector extends HTMLElement {
       });
       buttondiv.appendChild(presetButton);
     }
+    */
     const doneButton = document.createElement("button");
     doneButton.type = "button";
     doneButton.id = "but-chan-sel";
