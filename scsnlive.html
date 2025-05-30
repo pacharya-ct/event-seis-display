@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" href="./css/style.css">
-  <title>SCSN Realtime Display</title>
+  <title>PQRS: SCSN Live</title>
   <style>
     sp-organized-display {
       --sp-seismograph-height: 100px;
@@ -13,10 +13,10 @@
       --even-row-background: #ecf8f9;
     }
     sp-station-quake-map#regionalmap {
-      height: 560px;
+      height: 750px;
     }
     sp-station-quake-map#worldmap {
-      height: 350px;
+      height: 300px;
     }
    </style>
 </head>
@@ -36,7 +36,7 @@
     <div id="realtime"></div>
   </main>
   <lheader class="left-header">
-    <img align="center" src="images/PQRS_logo_t.png" height="120" alt="SCSN Realtime Display">
+    <img align="center" src="images/PQRS_logo_t.png" height="120" alt="PQRS Logo">
   </lheader>
   <rheader class="right-header"><span>
     <h4>Powered by:</h4>
@@ -46,7 +46,7 @@
   <section class="left-sidebar">
     <error-text></error-text>
     <h3>Station and Recent Earthquake Map</h3>
-    <sp-station-quake-map id="regionalmap" centerLat="35" centerLon="-118" zoomLevel="6" fitBounds="false" magScale="2.5"
+    <sp-station-quake-map id="regionalmap" centerLat="34.5" centerLon="-118" zoomLevel="7" fitBounds="false" magScale="2.5"
       tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
       tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
     </sp-station-quake-map>

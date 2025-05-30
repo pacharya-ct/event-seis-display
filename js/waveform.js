@@ -194,7 +194,7 @@ function addPicksToWaveform() {
 }
 const seismographCss = `.marker.Ppick polygon{ fill: rgba(106, 90, 205, 0.4); }
   .marker.Spick polygon{ fill: rgba(255, 165, 100, 0.4); }
-  svg.seismograph g.title text tspan.titleText{stroke:#003B4C; fill:#003B4C; color:#003B4C; }`;
+  svg.seismograph g.title text tspan.titleText{stroke: none; fill: #003B4C; color: #003B4C; }`;
 
 const orgDispItemCss = `sp-seismograph{
           border:1px solid #eeeeee;
@@ -245,6 +245,7 @@ function drawWaveforms(data) {
   };
   rtDisp = sp.animatedseismograph.createRealtimeDisplay(rtConfig);
   rtDisp.organizedDisplay.tools = false;
+  rtDisp.organizedDisplay.sortby = "north_to_south";
   rtDisp.organizedDisplay.onRedraw = updRTDisplay;
   rtDisp.organizedDisplay.overlayby=sp.organizeddisplay.OVERLAY_INDIVIDUAL;
   rtDisp.animationScaler.animate();
@@ -261,6 +262,7 @@ function drawWaveforms(data) {
   seisConfig.isXAxis = false;
   seisConfig.yLabel = "Amplitude ({{#each seisDataList}}{{ this.channel.instrumentSensitivity.inputUnits }}{{/each}})";
   seisConfig.ySublabelIsUnits = false;
+  seisConfig.allowZoom = false;
   // #003B4C: caltech deep blue
   // #00A1DF: caltech bright blue
   // #1c4b82: color used in poster

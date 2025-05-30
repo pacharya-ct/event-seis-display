@@ -25,7 +25,7 @@ div#realtime {
     'main'
     'sd'
     'ft'
-    'lft'
+    'ft'
     'rft'
 }
 
@@ -70,7 +70,7 @@ div#realtime {
     grid-template-areas:
       'lhd rhd main main main main main'
       'sd sd main main main main main'
-      'lft ft ft ft ft ft rft';
+      'sd sd ft ft ft rft rft';
   }
 }
 /* end grid container*/
@@ -118,7 +118,7 @@ section.left-sidebar div {
 }
 div.quaketbl-wrapper{
   display:block;
-  height: 130px;
+  height: 120px;
   overflow-x:auto;
   font-size: 1.2em;
   border: none;
@@ -133,7 +133,7 @@ span#id_evt_status {
   color: #003B4C;
 }
 main.main-content h1 {
-  font-weight: bold; font-size: 2.5em;
+  font-weight: bold; font-size: 3em;
   color: #003B4C;
   margin: 0.2em 0 0.1em 0;
   text-align: center;
