@@ -70,8 +70,16 @@ for (let elem of quakeTableElems) {
 }
 
 function isValidJson (jsonData) {
-  return true;
-  // TODO Needs to be filled
+  // ensure the json file contains data > regional_7days & global_7days_mag5_5 and events under both
+  if ('data' in jsonData ) {
+    if ('regional_7days' in jsonData.data && 'global_7days_mag5_5' in jsonData.data) {
+      if (jsonData.data.regional_7days.events !== undefined && 
+        jsonData.data.global_7days_mag5_5.events !== undefined) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function parseEventJson(jsonData) {
@@ -106,14 +114,18 @@ async function loadQuakeJson(url) {
     }
     let quakejson = await response.json();
     if (isValidJson(quakejson)) {
-      let quakes = parseEventJson(quakejson);
-      evtStatusElem.textContent = `Last updated: ${sp.luxon.DateTime.utc()}`;
-      return quakes;
+      const quakesRegional = parseEventJson(quakejson.data.regional_7days.events);
+      const quakesGlobal = parseEventJson(quakejson.data.global_7days_mag5_5.events);
+
+      evtStatusElem.textContent = `Last updated: ${quakejson.lastupdated}`;
+      return {'quakesRegional': quakesRegional,
+        'quakesGlobal': quakesGlobal};
     } else {
       throw new TypeError(`Invalid data!`);
     }
   }
   catch (e) {
+    pauseEventRefresh();
     logError(errorSel, `Unable to get quakes from ${url}.`, e);
     return [];
   }
@@ -159,17 +171,19 @@ async function quakes2table (quakeList, quaketblid) {
   elem.columnValues = columnValues;
 }
 async function buildEventMapAndTable() {
-  let quakesRegional = await loadQuakeJson(settings.QUAKE_JSON_REGIONAL);
-  let quakesGlobalM5_5 = await loadQuakeJson(settings.QUAKE_JSON_GLOBAL);
-  quakes2map(quakesRegional, mymap);
-  quakes2map(quakesGlobalM5_5, myworldmap);
+  let quakes = await loadQuakeJson(settings.QUAKE_JSON);
+  if (quakes.length == 0) {
+    return;
+  }
+  quakes2map(quakes.quakesRegional, mymap);
+  quakes2map(quakes.quakesGlobal, myworldmap);
 
   //Filtering for tables: 1. local quakes in last 6h,
   //    2. local quakes in last 7 days with mag >=3
   let now = sp.luxon.DateTime.utc();
   let quakes6hLocal = [];
   let quakes7dLocalM3 = [];
-  for (let quake of quakesRegional) {
+  for (let quake of quakes.quakesRegional) {
     let howOld = now - quake.time;
     if (howOld <= duration6h) {
       quakes6hLocal.push(quake);
@@ -188,7 +202,7 @@ async function buildEventMapAndTable() {
   }
   quakes2table(quakes6hLocal, "quake6h_ca")
   quakes2table(quakes7dLocalM3, "quake7d_ca_mag3")
-  quakes2table(quakesGlobalM5_5, "quake7d_mag5_5");
+  quakes2table(quakes.quakesGlobal, "quake7d_mag5_5");
   // array.filter works fine, but it is internally looping
   // over the entire array each time a filter is needed.
   // and since we have multiple filters, running the classic for loop
