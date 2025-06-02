@@ -46,6 +46,13 @@ for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
   }
 `;
 }
+
+// deep copy and sort asc for defining which set a quake should be put in.
+//    sort desc for adding to map layer.
+const quakeLevelSortedAsc = JSON.parse(JSON.stringify(settings.QUAKE_AGE_LEVELS));
+quakeLevelSortedAsc.sort((a,b) => sp.luxon.Duration.fromISO(a.duration) - sp.luxon.Duration.fromISO(b.duration));
+const quakeLevelSortedDesc = quakeLevelSortedAsc.toReversed();
+
 const geoJsonStyleMap = new Map();
 for (let layer of settings.GEOJSON_LAYERS) {
   let styles = {
@@ -137,14 +144,16 @@ function quakes2map(quakeList, mapElem) {
   let quakes1day = [];
   let quakes1week = [];
   let quakesByAge = new Map();
-  for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
+  for (let quakeLevel of quakeLevelSortedAsc) {
     quakesByAge.set(quakeLevel.name, []);
   }
 
+
   for (let quake of quakeList) {
     let howOld = now - quake.time;
-    // 3 disjoint sets for maps. quakes in last hour, last day, last week
-    for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
+    // 3 disjoint sets for maps. quakes in last hour, last day, last week. 
+    // newest first
+    for (let quakeLevel of quakeLevelSortedAsc) {
       if (howOld <= sp.luxon.Duration.fromISO(quakeLevel.duration)) {
         quakesByAge.get(quakeLevel.name).push(quake);
         break;
@@ -155,9 +164,12 @@ function quakes2map(quakeList, mapElem) {
   // mapElem.addQuake(quakes); but that has not been done
   // because quakemarkers need to be colored differently based
   // on how recent they are.
+
   mapElem.quakeList=[]; //clear previously loaded quakes (if any)
 
-  for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
+  // quake age sorted by oldest first to add to the map
+
+  for (let quakeLevel of quakeLevelSortedDesc) {
     let quakes = quakesByAge.get(quakeLevel.name);
     mapElem.addQuake(quakes, quakeLevel.name);
   }
