@@ -1,7 +1,0 @@
-{
-  "RS_URL": "<ringserver url>",
-  "SEEDLINK_URL": "<web socket url to seedlink server>",
-  "FDSN_WS": "<fdsn web service url>",
-  "DURATION": "PT20M"
-  "EVENT_WS": "<fdsn event web service url>",
-}
