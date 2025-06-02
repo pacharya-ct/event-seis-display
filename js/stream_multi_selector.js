@@ -146,7 +146,7 @@ class StreamMultiSelector extends HTMLElement {
         column-count:${this.columns};
       }
       details div.stream-list-div label {margin-right:1.5em;}
-      details div.stream-list-div chk-label {display:inline-block; break-inside:avoid;}
+      details div.stream-list-div chk-label {display:block; break-inside:avoid;}
     `;
   }
   setDoneAction(callback) {
