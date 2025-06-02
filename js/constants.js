@@ -3,7 +3,7 @@ export const settings = Object.freeze({
   "SEEDLINK_URL": "wss://export2.gps.caltech.edu/ringserver/seedlink",
   "FDSN_WS": "service.scedc.caltech.edu",
   "EVENT_WS": "service.scedc.caltech.edu",
-  "DEFAULT_RT_DURATION": "PT60M",
+  "DEFAULT_RT_DURATION": "PT90M",
   "MAX_RT_DURATION": "PT120M",
   "CLEAR_DURATION": "PT5M",
   "REFRESH_RATE": "60000",
@@ -20,11 +20,9 @@ export const settings = Object.freeze({
       "name": "scsn-ridgecrest-das", "color": "#7A303F", "weight": 2},],
   "PRESET_CHAN_LISTS": [
       {"name": "Hallway",
-       "channels": ["CI_MLAC__BHZ", "CI_SHO__BHZ", "CI_ISA__BHZ", "CI_CAR__BHZ", "CI_AVM__BHZ",
-            "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_SLH__BHZ", "CI_GLA__BHZ",
-            "CI_WMD__BHZ", "CI_SDG__BHZ", "CI_IKP__BHZ"]},
-      {"name": "Shortlist",
-       "channels": ["CI_EML__BHZ", "CI_SDR__BHZ"]}
+       "channels": ["CI_MLAC__BHZ", "CI_WRC2__BHZ", "CI_SHO__BHZ", "CI_ISA__BHZ", "CI_CAR__BHZ", "CI_AVM__BHZ",
+            "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_PALA__BHZ", "CI_SLH__BHZ", 
+            "CI_GOR__BHZ", "CI_GLA__BHZ", "CI_WMD__BHZ", "CI_BAR__BHZ", "CI_IKP__BHZ"]},
    ],
   "DEFAULT_CHAN_LIST": "Hallway"
 });
