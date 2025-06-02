@@ -245,9 +245,16 @@ function drawWaveforms(data) {
   };
   rtDisp = sp.animatedseismograph.createRealtimeDisplay(rtConfig);
   rtDisp.organizedDisplay.tools = false;
-  rtDisp.organizedDisplay.sortby = "north_to_south";
   rtDisp.organizedDisplay.onRedraw = updRTDisplay;
   rtDisp.organizedDisplay.overlayby=sp.organizeddisplay.OVERLAY_INDIVIDUAL;
+
+  rtDisp.organizedDisplay.addSortingFunction("north_to_south",
+    (sdd) => {
+      return sdd.hasChannel() ? 90-sdd.channel.latitude : 90;
+    }
+  );
+  rtDisp.organizedDisplay.sortby = "north_to_south";
+
   rtDisp.animationScaler.animate();
   
   const seisConfig = rtDisp.organizedDisplay.seismographConfig;
@@ -262,6 +269,7 @@ function drawWaveforms(data) {
   seisConfig.isXAxis = false;
   seisConfig.yLabel = "Amplitude ({{#each seisDataList}}{{ this.channel.instrumentSensitivity.inputUnits }}{{/each}})";
   seisConfig.ySublabelIsUnits = false;
+  seisConfig.yAxisNumTickHint = 4;
   seisConfig.allowZoom = false;
   // #003B4C: caltech deep blue
   // #00A1DF: caltech bright blue
