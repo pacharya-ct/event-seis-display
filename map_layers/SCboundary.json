@@ -1,0 +1,16 @@
+{
+    "type": "FeatureCollection",
+    "features": [ {
+        "type": "Feature",
+        "properties": {
+            "name": "SCSN",
+            "description": "Boundary of SCSN seismic monitoring area"
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [ [
+                [-117.76, 37.43], [-121.25, 34.50], [-118.5, 31.50], [-114.00, 31.50], [-114.00, 34.50], [-117.76, 37.43]
+            ] ]
+        }
+    }]
+}
