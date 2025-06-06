@@ -16,16 +16,26 @@ let lastPacketReceived = null;
 
 // display now time
 const n_span = document.getElementById("nt");
-setInterval(() => {
-  // update the current time
-  n_span.textContent = sp.luxon.DateTime.utc().toISO();
-}, 1000);
-
 const mymap = document.querySelector("sp-station-quake-map");
 const realtimeDiv = document.getElementById("realtime");
 const durationElem = document.getElementById("id_sel_duration");
 const streamSelector = document.querySelector("stream-multi-selector");
 const statusElem = document.querySelector("span#id_status_message");
+const seismographCss = `.marker.Ppick polygon{
+    fill: rgba(106, 90, 205, 0.4);
+  }
+  .marker.Spick polygon{
+    fill: rgba(255, 165, 100, 0.4);
+  }
+  svg.seismograph g.title text tspan.titleText{
+    stroke: none; fill: #003B4C; color: #003B4C;
+  }`;
+const orgDispItemCss = `sp-seismograph{
+          border:1px solid #eeeeee;
+          margin:1px 2px 1px 2px;
+          background-color:#fff }`;
+let clockTimerIntervalId = null;
+let slConnCheckIntervalId = null;
 
 durationElem.value=settings.DEFAULT_RT_DURATION;
 durationElem.addEventListener("change", function (evt) {
@@ -33,10 +43,6 @@ durationElem.addEventListener("change", function (evt) {
     updateDuration(newDuration);
   });
 
-function updateNumPackets() {
-  numPackets++;
-  document.querySelector("#numPackets").textContent = numPackets;
-}
 /*
 const resChannels = await fetch('../conf/channellist.json');
 const jsonData = await resChannels.json();
@@ -49,6 +55,35 @@ await getAvailStreams(settings.PRESET_CHAN_LISTS, settings.DEFAULT_CHAN_LIST);
 //this needs to be a copy and not a reference to the same object. 
 sharedData.streams = new Set(streamSelector.getSelectedStreams());
 buildMapAndWaveforms(sharedData);
+
+startIntervals();
+
+// Define events for when page is hidden or page is visible
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    slDisconnect();
+    if (rtDisp) {rtDisp.animationScaler.pause();}
+    pauseIntervals()
+  }
+  else {
+    slConnect();
+    rtDisp.animationScaler.animate();
+    startIntervals();
+  }
+});
+
+// Function Declarations
+export function getDuration() {
+  return sharedData.duration;
+}
+export function updateQuakesAndPicks(quakesAndPicks) {
+  sharedData.quakesAndPicks = quakesAndPicks;
+  addPicksToWaveform();
+}
+function updateNumPackets() {
+  numPackets++;
+  document.querySelector("#numPackets").textContent = numPackets;
+}
 
 async function getAvailStreams(presetChanLists, defaultPreset) {
   logDebug(">>>> In getAvailStreams");
@@ -115,9 +150,7 @@ async function addStations2Map (mapElem, networkList) {
   mapElem.addStation(allStations);
   mapElem.drawStationLayer();
 }
-export function getDuration() {
-  return sharedData.duration;
-}
+
 function updateDuration(newDuration) {
   if (sharedData.duration != newDuration) {
     sharedData.duration = newDuration;
@@ -136,11 +169,6 @@ function updateStreams(newStreams) {
   buildMapAndWaveforms (sharedData);
 }
 
-export function updateQuakesAndPicks(quakesAndPicks) {
-  sharedData.quakesAndPicks = quakesAndPicks;
-  addPicksToWaveform();
-}
-
 async function buildMapAndWaveforms (sharedData) {
   logDebug(">>>> In buildMapAndWaveforms");
   sharedData.networks = await getFDSNNetworkList(sharedData.streams, sharedData.duration);
@@ -149,7 +177,6 @@ async function buildMapAndWaveforms (sharedData) {
   drawWaveforms(sharedData);
   logDebug("<<<< Out buildMapAndWaveforms");
 }
-
 
 function addPicksToWaveform() {
   logDebug(">>> in addPicksToWaveform");
@@ -192,14 +219,6 @@ function addPicksToWaveform() {
   }
   logDebug("<<< Out addPicksToWaveform. ");
 }
-const seismographCss = `.marker.Ppick polygon{ fill: rgba(106, 90, 205, 0.4); }
-  .marker.Spick polygon{ fill: rgba(255, 165, 100, 0.4); }
-  svg.seismograph g.title text tspan.titleText{stroke: none; fill: #003B4C; color: #003B4C; }`;
-
-const orgDispItemCss = `sp-seismograph{
-          border:1px solid #eeeeee;
-          margin:1px 2px 1px 2px;
-          background-color:#fff }`;
 
 function updRTDisplay(orgDisp) {
   logDebug('>>> in updRTDisplay');
@@ -345,13 +364,45 @@ function slDisconnect() {
   sharedData.stopped=true;
   statusElem.textContent=`Disconnected at ${now}`;
 }
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    slDisconnect();
-    if (rtDisp) {rtDisp.animationScaler.pause();}
+
+function checkLastPacket() {
+  logDebug(">>> in checkLastPacket");
+  // If page is visible, if last packet was received over a minute back, 
+  // assume connection is broken and attempt to reconnect
+  if (!document.hidden) {
+    const lastReceivedTime = lastPacketReceived ? lastPacketReceived.miniseed.header.endTime : null;
+    const oneMinAgo = sp.luxon.DateTime.utc().minus(sp.luxon.Duration.fromISO("PT1M"));
+
+    if (!lastReceivedTime || (lastReceivedTime < oneMinAgo)) {
+      logInfo(`Data last received at ${lastReceivedTime}. Attempting disconnect and reconnect to Seedlink server at ${now}`);
+      slDisconnect();
+      slConnect();
+    }
   }
-  else {
-    slConnect();
-    rtDisp.animationScaler.animate();
+}
+
+/* manage functions that are run periodically */
+function pauseIntervals() {
+  if (clockTimerIntervalId) {
+    clearInterval(clockTimerIntervalId);
+    clockTimerIntervalId = null;
   }
-});
+  if (slConnCheckIntervalId) {
+    clearInterval(slConnCheckIntervalId);
+    slConnCheckIntervalId = null;
+  }
+
+}
+function startIntervals() {
+  // clear previous jobs if present
+  pauseIntervals();
+
+  // update the current time, every second
+  clockTimerIntervalId = setInterval(() => {
+    n_span.textContent = sp.luxon.DateTime.utc().toISO();
+  }, 1000);
+
+  // check if the seedlink connection is active or not, every 5 minutes
+  slConnCheckIntervalId = setInterval(checkLastPacket, 5*60*1000);
+}
+
