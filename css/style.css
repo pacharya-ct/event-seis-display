@@ -75,11 +75,6 @@ div#realtime {
 }
 /* end grid container*/
 
-/* attempt to style the station marker. doesnt seem to work tho */
-.leaflet-marker-icon {
-  width:5px;
-  height:5px;
-}
 map-legend {
   margin: 0;
   padding: 0;

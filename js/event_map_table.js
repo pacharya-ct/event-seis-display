@@ -34,10 +34,25 @@ let mapstyle = `div.stationMapMarker {
   .leaflet-control-attribution {
     font-size:9px;
   }
+  .leaflet-tooltip-bottom:before {
+    border: none;
+  }
   path.quakeMapMarker {
     fill-opacity: 0.6;
     stroke-width:1px;
     stroke: black;
+  }
+  .stationTooltip {
+    background:none;
+    box-shadow:none;
+    margin-left:6px;
+    margin-top:14px;
+    padding:0;
+    font-size:9px;
+    font-weight:bold;
+    color: rgb(60,19,8,0.7);
+    text-shadow:unset;
+    border:none;
   }
 `;
 for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {

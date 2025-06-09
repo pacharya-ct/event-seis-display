@@ -148,7 +148,7 @@ async function addStations2Map (mapElem, networkList) {
   let allStations = Array.from(sp.stationxml.allStations(networkList));
   mapElem.stationList = [];
   mapElem.addStation(allStations);
-  mapElem.drawStationLayer();
+  mapElem.drawStationLayer({permanent:true, direction:'bottom', className: 'stationTooltip'});
 }
 
 function updateDuration(newDuration) {
@@ -303,7 +303,7 @@ function drawWaveforms(data) {
       "royalblue",
       ];
   seisConfig.markerFlagpoleBase = 'bottom';
-  seisConfig.title = "{{#each seisDataList}}<tspan class='titleText'>{{ this.channel.nslc }} ({{ this.channel.latitude }}, {{ this.channel.longitude }})</tspan>{{else}}No Data{{/each}}";
+  seisConfig.title = "{{#each seisDataList}}<tspan class='titleText'>{{this.channel.networkCode}}.{{ this.channel.stationCode }} {{ this.channel.station.name }} ({{ this.channel.latitude }}, {{ this.channel.longitude }})</tspan>{{else}}No Data{{/each}}";
   const bottomSeisConfig = seisConfig.clone();
   bottomSeisConfig.margin.bottom=18;
   bottomSeisConfig.isXAxis = true;
