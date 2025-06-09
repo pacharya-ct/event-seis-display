@@ -22,7 +22,7 @@ export const settings = Object.freeze({
       {"name": "Hallway",
        "channels": ["CI_MLAC__BHZ", "CI_WRC2__BHZ", "CI_SHO__BHZ", "CI_BAK__BHZ", "CI_CAR__BHZ", "CI_AVM__BHZ",
             "CI_IRM__BHZ","CI_DJJ__BHZ", "CI_BEL__BHZ","CI_RVR__BHZ", "CI_PALA__BHZ", "CI_SLH__BHZ", 
-            "CI_GOR__BHZ", "CI_GLA__BHZ", "CI_WMD__BHZ", "CI_BAR__BHZ", "CI_IKP__BHZ"]},
+            "CI_GOR__BHZ", "CI_GLA__BHZ", "CI_IMP__BHZ", "CI_BAR__BHZ", "CI_IKP__BHZ"]},
    ],
   "DEFAULT_CHAN_LIST": "Hallway"
 });
