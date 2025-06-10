@@ -370,8 +370,9 @@ function checkLastPacket() {
   // If page is visible, if last packet was received over a minute back, 
   // assume connection is broken and attempt to reconnect
   if (!document.hidden) {
+    const now = sp.luxon.DateTime.utc();
     const lastReceivedTime = lastPacketReceived ? lastPacketReceived.miniseed.header.endTime : null;
-    const oneMinAgo = sp.luxon.DateTime.utc().minus(sp.luxon.Duration.fromISO("PT1M"));
+    const oneMinAgo = now.minus(sp.luxon.Duration.fromISO("PT1M"));
 
     if (!lastReceivedTime || (lastReceivedTime < oneMinAgo)) {
       logInfo(`Data last received at ${lastReceivedTime}. Attempting disconnect and reconnect to Seedlink server at ${now}`);
