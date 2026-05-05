@@ -20,7 +20,34 @@
     sp-station-quake-map#worldmap {
       height: 300px;
     }
-   </style>
+    div#div-worldmap {
+      border:none;
+      flex:65%;
+    }
+    div#div-maplegend {
+      border:none;
+      padding:0px;
+      margin: 0px;
+      flex:35%;
+    }
+    div#div-maplegend div {
+      margin:2px 0 2px 0;
+    }
+    .map-flex-container {
+      display: flex;
+      flex-direction: row;
+      border:none;
+      padding:0px;
+      margin: 0px;
+  }
+  /* Responsive layout - makes a one column layout instead of a two-column layout 
+  Put legend next to map in a huge screen layout, otherwise put it above the world map */
+  @media (max-width: 2800px) {
+    .map-flex-container {
+      flex-direction: column;
+    }
+  }
+  </style>
 </head>
 <body class="two-col-grid">
   <main class="main-content"><h1>SCSN Live</h1>
@@ -52,11 +79,17 @@
       tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
       tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
     </sp-station-quake-map>
-    <sp-station-quake-map id="worldmap" centerLat="20" centerLon="-118" zoomLevel="1" fitBounds="true" magScale="2.5"
-      tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
-    </sp-station-quake-map>
-    <map-legend></map-legend><span class="float-right" id="id_evt_status"></span>
+    <div class="map-flex-container">
+      <div id="div-maplegend">
+        <map-legend></map-legend><span id="id_evt_status"></span>
+      </div>
+      <div id="div-worldmap">
+      <sp-station-quake-map id="worldmap" centerLat="20" centerLon="-118" zoomLevel="1" fitBounds="true" magScale="2.5"
+        tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+        tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN,   GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and   the GIS User Community">
+      </sp-station-quake-map>
+      </div>
+    </div>
     <div>
       <h3 class="tblheader">California Regional Earthquakes in the last 6 hours</h3>
     <div class="quaketbl-wrapper">

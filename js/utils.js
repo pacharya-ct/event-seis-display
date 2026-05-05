@@ -84,7 +84,8 @@ export function drawLegend(mymap, legendSel) {
   const defLegendSel = "map-legend";
   const sel = legendSel ? legendSel : defLegendSel;
   const legendElem = document.querySelector(sel);
-
+  let divAge = document.createElement("div")
+  legendElem.appendChild(divAge);
   for (let ql of settings.QUAKE_AGE_LEVELS) {
     let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgElem.setAttribute("width", "25");
@@ -97,10 +98,11 @@ export function drawLegend(mymap, legendSel) {
     circleElem.setAttribute("stroke", "black");
     circleElem.setAttribute("stroke-width", "1");
     svgElem.appendChild(circleElem);
-    legendElem.appendChild(svgElem);
-    legendElem.appendChild(document.createTextNode(ql.label));
+    divAge.appendChild(svgElem);
+    divAge.appendChild(document.createTextNode(ql.label));
   }
-  legendElem.appendChild(document.createElement('br'));
+  let divMag = document.createElement("div");
+  legendElem.appendChild(divMag);
   for (let mag of settings.QUAKE_MAG_LEVELS) {
     let svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     let radius = sp.leafletutil.getRadiusForMag(mag, mymap.magScale);
@@ -115,7 +117,7 @@ export function drawLegend(mymap, legendSel) {
     circleElem.setAttribute("stroke-width", "1");
 //    circleElem.setAttribute("fill", "#ff6e1e");
     svgElem.appendChild(circleElem);
-    legendElem.appendChild(svgElem);
-    legendElem.appendChild(document.createTextNode("M " + mag));
+    divMag.appendChild(svgElem);
+    divMag.appendChild(document.createTextNode("M " + mag));
   }
 }
