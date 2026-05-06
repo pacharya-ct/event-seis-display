@@ -53,6 +53,7 @@ const duration7d = sp.luxon.Duration.fromObject({"days": 7});
 const durationMaxRT = sp.luxon.Duration.fromISO(settings.MAX_RT_DURATION);
 //how to often to check and clear expired events and picks
 const durationClear = sp.luxon.Duration.fromISO(settings.CLEAR_DURATION);
+const durationFetchPickDelay = sp.luxon.Duration.fromISO(settings.FETCH_PICK_DELAY);
 
 // deep copy and sort asc for defining which set a quake should be put in.
 //    sort desc for adding to map layer.
@@ -198,9 +199,7 @@ async function buildEventMapAndTable() {
     if ((howOld <= durationMaxRT)
         && (localRegion.test(quake.eventId))){
       let id = quake.eventId.replace(localRegion, '');
-      if (!quakesForRT.has(id)) {
-        getEventPicks(id);
-      }
+      getEventPicks(id);
     }
   }
   quakes2table(quakes6hLocal, "quake6h_ca")
@@ -257,6 +256,10 @@ function clearQuakesForRT() {
     lastcleared = now;
   }
 }
+let refreshList = [];
+/*
+eventId should not contain the "ci" prefix
+*/
 async function getEventPicks(eventId) {
   logDebug(">>>> getEventPicks with eventId:", eventId);
   if (!settings.EVENT_WS) {
@@ -268,8 +271,31 @@ async function getEventPicks(eventId) {
     return;
   }
   let numPicks = 0;
-  //Fetch from ws only if it is not already loaded into quakesForRT
+  //Based on how soon the eventws is queried after the event we receive either RT or PP picks.
+  //While it great to get something from RT, the display should be updated with the picks from PP. 
+  //Instead of polling repeatedly to see if PP has updated the origin, query the eventws after 
+  //durationFetchPickDelay time has passed since origin time. Do this once. 
+  //Maintain a list of eventid that have been refetched so as to not refetch again.
+
+  let fetch = false;
+  let refetch = false;
+  // first time fetching. Just get it
   if (!quakesForRT.has(eventId)) {
+    fetch = true;
+  }
+  else {
+    let q = quakesForRT.get(eventId);
+     if (!refreshList.includes(eventId) && ((sp.luxon.DateTime.utc() - q.time) >= durationFetchPickDelay)) {
+      // refetch only if durationFetchPickDelay time has passed since origin and 
+      // it has not been refreshed. This does mean events older than durationFetchPickDelay will 
+      // also get refreshed once, but we can live with it.
+      // This is because the q object does not contain the xml creation time
+      // found at eventParameters > creationInfo > creationTime. It has the time under "event" which 
+      // is server update time. Not useful for us. 
+      refetch = true;
+    }
+  }
+  if (fetch || refetch) {
     let eventQuery = new sp.fdsnevent.EventQuery(settings.EVENT_WS);
     eventQuery.eventId(eventId);
     eventQuery.includeArrivals(true);
@@ -280,6 +306,9 @@ async function getEventPicks(eventId) {
       let id = quake.eventId.replace(localRegion, '');
       if (!(quakesForRT.has(id))) {
         quakesForRT.set(id, quake);
+      }
+      if (refetch) {
+        refreshList.push(id);
       }
       // get stations that have a pick - this is only for logging
       if (quake.pickList) {
