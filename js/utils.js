@@ -1,4 +1,4 @@
-import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
+import * as sp from "../lib/seisplotjs_standalone.mjs";
 import {settings} from "./constants.js";
 
 export function logDebug(...args) {

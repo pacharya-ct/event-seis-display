@@ -14,11 +14,13 @@
     sp-quake-table {
       --even-row-background: #ecf8f9;
     }
-    sp-station-quake-map#regionalmap {
+    #id_regionalmap {
       height: 750px;
     }
-    sp-station-quake-map#worldmap {
-      height: 300px;
+    #id_worldmap {
+      height:300px;
+      border:none;
+      flex:65%;
     }
     div#div-worldmap {
       border:none;
@@ -75,19 +77,13 @@
   <section class="left-sidebar">
     <error-text></error-text>
     <h3>Station and Recent Earthquake Map</h3>
-    <sp-station-quake-map id="regionalmap" centerLat="34.5" centerLon="-118" zoomLevel="7" fitBounds="false" magScale="2.5"
-      tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-      tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community">
-    </sp-station-quake-map>
+    <div id="id_regionalmap"></div>
     <div class="map-flex-container">
       <div id="div-maplegend">
         <map-legend></map-legend><span id="id_evt_status"></span>
       </div>
       <div id="div-worldmap">
-      <sp-station-quake-map id="worldmap" centerLat="20" centerLon="-118" zoomLevel="1" fitBounds="true" magScale="2.5"
-        tileUrl="https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-        tileAttribution="Tiles © Esri — Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN,   GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and   the GIS User Community">
-      </sp-station-quake-map>
+        <div id="id_worldmap"></div>
       </div>
     </div>
     <div>

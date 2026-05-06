@@ -1,13 +1,46 @@
-import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
+import * as sp from "../lib/seisplotjs_standalone.mjs";
 import {updateQuakesAndPicks} from "./waveform.js";
 import {logDebug, logInfo, logWarn, logError, drawLegend} from "./utils.js";
 import {settings} from "./constants.js";
+import {EventStaMap} from "./event_sta_map.js";
+sp.cssutil.insertCSS(sp.leafletutil.leaflet_css, "spjs_leaflet");
 
+const mapConfig = {
+    "map": {
+        "viewLat": 35.2, 
+        "viewLon": -118,
+        "zoom": 7,
+        "centerLon": 0,
+        "magScaleFactor": 2
+    },
+    "worldmap": {
+        "viewLat": 20, 
+        "viewLon": -118,
+        "zoom": 1,
+        "centerLon": 0,
+        "magScaleFactor": 2
+    }
+  };
 const errorSel = "section.left-sidebar error-text";
 
 const quakesForRT = new Map();
-const mymap = document.querySelector("sp-station-quake-map#regionalmap");
-const myworldmap = document.querySelector("sp-station-quake-map#worldmap");
+const mymapelem = document.querySelector("div#id_regionalmap");
+const myworldmapelem = document.querySelector("div#id_worldmap");
+
+const mymap = new EventStaMap(mymapelem, mapConfig.map, "");
+const myworldmap = new EventStaMap(myworldmapelem, mapConfig.worldmap, "");
+
+//define keys that can be used to access the map object when called from another file
+export const REGIONAL_MAP = 'regional_map';
+export const WORLD_MAP = 'world_map';
+export function getMap(maptype) {
+  if (maptype == REGIONAL_MAP) {
+    return mymap;
+  }
+  else if (maptype == WORLD_MAP) {
+    return myworldmap;
+  }
+} 
 const evtStatusElem = document.querySelector("span#id_evt_status");
 const QUAKE_COL = sp.infotable.QUAKE_COLUMN;
 
@@ -21,65 +54,11 @@ const durationMaxRT = sp.luxon.Duration.fromISO(settings.MAX_RT_DURATION);
 //how to often to check and clear expired events and picks
 const durationClear = sp.luxon.Duration.fromISO(settings.CLEAR_DURATION);
 
-// define and add styles to maps and quake tables.
-let mapstyle = `div.stationMapMarker {
-    color: rgb(60,19,8,0.7);
-    stroke: black;
-    text-shadow:unset;
-  }
-  .leaflet-marker-icon {
-    width:10px;
-    height:10px;
-  }
-  .leaflet-control-attribution {
-    font-size:9px;
-  }
-  .leaflet-tooltip-bottom:before {
-    border: none;
-  }
-  path.quakeMapMarker {
-    fill-opacity: 0.6;
-    stroke-width:1px;
-    stroke: black;
-  }
-  .stationTooltip {
-    background:none;
-    box-shadow:none;
-    margin-left:6px;
-    margin-top:14px;
-    padding:0;
-    font-size:9px;
-    font-weight:bold;
-    color: rgb(60,19,8,0.7);
-    text-shadow:unset;
-    border:none;
-  }
-`;
-for (let quakeLevel of settings.QUAKE_AGE_LEVELS) {
-  mapstyle += `  path.${quakeLevel.name}{
-    fill: ${quakeLevel.color};
-  }
-`;
-}
-
 // deep copy and sort asc for defining which set a quake should be put in.
 //    sort desc for adding to map layer.
 const quakeLevelSortedAsc = JSON.parse(JSON.stringify(settings.QUAKE_AGE_LEVELS));
 quakeLevelSortedAsc.sort((a,b) => sp.luxon.Duration.fromISO(a.duration) - sp.luxon.Duration.fromISO(b.duration));
 const quakeLevelSortedDesc = quakeLevelSortedAsc.toReversed();
-
-const geoJsonStyleMap = new Map();
-for (let layer of settings.GEOJSON_LAYERS) {
-  let styles = {
-      color: layer.color,
-      weight: layer.weight,
-      fillOpacity:0,
-    }
-  geoJsonStyleMap.set(layer.name, styles);
-}
-
-mymap.addStyle(mapstyle);
-myworldmap.addStyle(mapstyle);
 
 const quakeTableElems = document.querySelectorAll("sp-quake-table");
 for (let elem of quakeTableElems) {
@@ -113,7 +92,6 @@ function parseEventJson(jsonData) {
     quake.eventId=evtId;
     let eventTime = sp.util.isoToDateTime(entry.eventTime);
     const origin = new sp.quakeml.Origin(eventTime, entry.latitude, entry.longitude);
-
     origin.depth = entry.depth*1000;
     quake.originList.push(origin);
     const mag = new sp.quakeml.Magnitude(entry.magnitude);
@@ -153,7 +131,7 @@ async function loadQuakeJson(url) {
   }
 }
 
-function quakes2map(quakeList, mapElem) {
+function quakes2map(quakeList, evtMap) {
   let now = sp.luxon.DateTime.utc();
   let quakes1hour = [];
   let quakes1day = [];
@@ -162,7 +140,6 @@ function quakes2map(quakeList, mapElem) {
   for (let quakeLevel of quakeLevelSortedAsc) {
     quakesByAge.set(quakeLevel.name, []);
   }
-
 
   for (let quake of quakeList) {
     let howOld = now - quake.time;
@@ -176,19 +153,18 @@ function quakes2map(quakeList, mapElem) {
     }
   }
   // all quakes could be added in one go like this
-  // mapElem.addQuake(quakes); but that has not been done
+  // evtMap.addQuake(quakes); but that has not been done
   // because quakemarkers need to be colored differently based
   // on how recent they are.
 
-  mapElem.quakeList=[]; //clear previously loaded quakes (if any)
+  evtMap.quakeList=[]; //clear previously loaded quakes (if any)
 
   // quake age sorted by oldest first to add to the map
-
   for (let quakeLevel of quakeLevelSortedDesc) {
     let quakes = quakesByAge.get(quakeLevel.name);
-    mapElem.addQuake(quakes, quakeLevel.name);
+    evtMap.addQuakes(quakes, quakeLevel.name);
   }
-  mapElem.drawQuakeLayer();
+  evtMap.drawQuakeLayer();
 }
 
 async function quakes2table (quakeList, quaketblid) {
@@ -245,7 +221,7 @@ async function buildEventMapAndTable() {
   */
 }
 
-async function addGeoJsonLayer2map(layerLabel, geojsonurl, layerName) {
+async function addGeoJsonLayer2map(layerLabel, geojsonurl, layerName, layerstyle) {
   try {
     logDebug("Fetching geojsonlayer: ", geojsonurl);
     let response = await fetch(geojsonurl);
@@ -253,8 +229,7 @@ async function addGeoJsonLayer2map(layerLabel, geojsonurl, layerName) {
       throw new Error(response.status);
     }
     let layerJson = await response.json();
-    let styles = geoJsonStyleMap.get(layerName);
-    let sfunc = function(f) { return styles};
+    let sfunc = function(f) { return layerstyle};
     mymap.addGeoJsonLayer(layerLabel, layerJson, sfunc);
   }
   catch (e) {
@@ -292,6 +267,7 @@ async function getEventPicks(eventId) {
     logWarn('Event ID not provided. Skip fetching picks');
     return;
   }
+  let numPicks = 0;
   //Fetch from ws only if it is not already loaded into quakesForRT
   if (!quakesForRT.has(eventId)) {
     let eventQuery = new sp.fdsnevent.EventQuery(settings.EVENT_WS);
@@ -301,7 +277,7 @@ async function getEventPicks(eventId) {
     let allPickNetStas = new Set();
     let quakeList = await eventQuery.query();
     for (let quake of quakeList) {
-      let id = quake.eventId;
+      let id = quake.eventId.replace(localRegion, '');
       if (!(quakesForRT.has(id))) {
         quakesForRT.set(id, quake);
       }
@@ -310,11 +286,12 @@ async function getEventPicks(eventId) {
         for (let pick of quake.pickList){
           allPickNetStas.add(pick.networkCode + '.' + pick.stationCode);
         }
+        numPicks = quake.pickList.length;
       }
     }
     clearQuakesForRT();
     updateQuakesAndPicks(quakesForRT);
-    logInfo(`Eventid ${eventId}. Picked on channels: `, allPickNetStas);
+    logInfo(`Eventid ${eventId}. Total Picks: ${numPicks} at ${sp.luxon.DateTime.utc()}. `, allPickNetStas);
   }
   logDebug("<<<< getEventPicks");
 }
@@ -347,7 +324,12 @@ columnValues.set(QUAKE_COL.DESC, q => q.description);
 
 // Add geojson layers
 for (let layer of settings.GEOJSON_LAYERS) {
-  await addGeoJsonLayer2map(layer.label, layer.url, layer.name);
+  let layerstyle = {
+      color: layer.color,
+      weight: layer.weight,
+      fillOpacity: 0,
+  }
+  await addGeoJsonLayer2map(layer.label, layer.url, layer.name, layerstyle);
 }
 mymap.drawGeoJsonLayers();
 drawLegend(mymap);

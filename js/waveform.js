@@ -1,6 +1,7 @@
-import * as sp from "../lib/seisplotjs_3.1.5-SNAPSHOT_standalone.mjs";
+import * as sp from "../lib/seisplotjs_standalone.mjs";
 import {settings} from "./constants.js";
 import {logDebug, logInfo, logWarn, logError} from "./utils.js";
+import {getMap, REGIONAL_MAP, WORLD_MAP} from "./event_map_table.js";
 
 let sharedData = {"duration": null, 
   "networks": [],
@@ -16,7 +17,7 @@ let lastPacketReceived = null;
 
 // display now time
 const n_span = document.getElementById("nt");
-const mymap = document.querySelector("sp-station-quake-map");
+const mymap = getMap(REGIONAL_MAP);
 const realtimeDiv = document.getElementById("realtime");
 const durationElem = document.getElementById("id_sel_duration");
 const streamSelector = document.querySelector("stream-multi-selector");
@@ -146,9 +147,9 @@ function buildSeedlinkConfig(streams) {
 
 async function addStations2Map (mapElem, networkList) {
   let allStations = Array.from(sp.stationxml.allStations(networkList));
-  mapElem.stationList = [];
-  mapElem.addStation(allStations);
-  mapElem.drawStationLayer({permanent:true, direction:'bottom', className: 'stationTooltip'});
+  mapElem.clearStations();
+  mapElem.addStations(allStations, 'stationMapMarker');
+  mapElem.drawStationLayer();
 }
 
 function updateDuration(newDuration) {
