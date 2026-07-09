@@ -1,6 +1,6 @@
 export const settings = Object.freeze({
-  "RS_URL": "https://export2.gps.caltech.edu/ringserver",
-  "SEEDLINK_URL": "wss://export2.gps.caltech.edu/ringserver/seedlink",
+  "RS_URL": "https://export.gps.caltech.edu/ringserver",
+  "SEEDLINK_URL": "wss://export.gps.caltech.edu/ringserver/seedlink",
   "FDSN_WS": "service.scedc.caltech.edu",
   "EVENT_WS": "service.scedc.caltech.edu",
   "DEFAULT_RT_DURATION": "PT90M",

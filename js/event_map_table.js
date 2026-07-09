@@ -14,8 +14,8 @@ const mapConfig = {
         "magScaleFactor": 2
     },
     "worldmap": {
-        "viewLat": 20, 
-        "viewLon": -118,
+        "viewLat": 0, 
+        "viewLon": 0,
         "zoom": 1,
         "centerLon": 0,
         "magScaleFactor": 2
